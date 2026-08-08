@@ -6,45 +6,44 @@
 Checkpoint the MemoryOS repository so a fresh agent can resume without chat context; afterwards, execute the locked 7-phase plan (Phase 0 → D1..D8).
 
 ## Current Phase
-Phase 0 (Bootstrap) — writing the continuity checkpoint; the repo currently contains the skeleton (10 dirs + .git, 0 commits) + this checkpoint docs.
+Phase 2 (D2 research copy) — Phase 0 ✓, Phase 1 (D1 merge) ✓ committed as `2823f40`.
 
 ## Current Task
-Implement `IMP.md` (context-preservation): author continuity docs, verify, single commit `docs(continuity): ...`.
+Copy old repo `research/**` verbatim into MemoryOS; write `sources_catalog.md` + `research/README.md`.
 
 ## Last Completed Action
-[2026-08-08] Reconstructed project history & locked the 7-phase plan; inspected MemoryOS skeleton (already had: `design/ experiments/ implementation/ journal/ product/ reconstruction/ research/ tools/ transfer/ verification/` + `.git` on `main`, 0 commits). Environment checks done (Python 3.14/3.11, Chrome 151, Git Bash).
+[2026-08-08] Phase 1 committed (`feat(d1): merged reconstruction`, `2823f40`): reconstruction/ (5 md + 2 PDFs, 6+4 pages verified) + tools/build_pdfs.py (pipeline smoke-tested). Personal `[O]` observations grafted into `01_problem.md` §5; stage→requirement mapping + OQ9 (user memory controls) added to `04_first_principles.md`; PDFs regenerated from merged markdown.
 
 ## Last Command Executed
-`git -C D:\Abhii\Projects\MemoryOS status` → "On branch main / No commits yet".
+`git -C D:\Abhii\Projects\MemoryOS commit -m "feat(d1): merged reconstruction"` → `2823f40`.
 
 ## Last Meaningful Result
-Confirmed MemoryOS repo is a clean, empty git repo (no blobs yet) — safe single-commit checkpoint home; verified machine env for PDF build path.
+Merged D1 verified: 6-page problem PDF, 4-page timeline PDF, merged content text-verified in PDF output.
 
 ## Currently Modified Files
-- Creating: `docs/SESSION_STATE.md`, `docs/PROJECT_MEMORY.md`, `CURRENT.md`, `docs/DECISIONS.md`, `journal/2026-08-08-session.md`, `PLAN.md`, `docs/RESUME.md`, `AGENTS.md`, `README.md`, `.gitignore`
-(all untracked, checkpoint commit will contain them + .gitignore)
+- EDITING (this checkpoint): `CURRENT.md`, `docs/SESSION_STATE.md`, `journal/2026-08-08-session.md`
+- Committed: reconstruction/ (Phase 1), tools/build_pdfs.py
 
 ## What I Was About To Do Next
-Write the remaining checkpoint files (PROJECT_MEMORY done; DECISIONS, journal, PLAN, RESUME, AGENTS, README, .gitignore next), then verify & commit.
+Copy old-repo `research/**` verbatim into MemoryOS; then write `research/sources_catalog.md` + `research/README.md`.
 
 ## Immediate Next 3 Actions
-1. Finish files: `docs/DECISIONS.md`, `journal/2026-08-08-session.md`, `PLAN.md`, `docs/RESUME.md`, `AGENTS.md`, `README.md`, `.gitignore`.
-2. Consistency check: PLAN ↔ CURRENT ↔ SESSION + scan for placeholders/TODO; `git -C D:\Abhii\Projects\MemoryOS status`.
-3. Commit: `docs(continuity): persist session state and resume checkpoint` (+ push n/a) and report per IMP step 14.
+1. Copy `D:\Abhii\Projects\Conversational-Memory-Intelligence-System-\research\**` → `research\` verbatim.
+2. Write `research/sources_catalog.md` + `research/README.md`.
+3. Commit `feat(d2): research weeks 1-4 + sources catalog`; update journal + SESSION_STATE; then Phase 3 (baseline run).
 
 ## Known Problems
-- Phase-0 plan said "mkdir+git init" — already true; MUST-NOT recreate dirs (copy anything).
-- Default `python` on PATH can't run pypdf/markdown-it (Python 3.14 path is the correct tool); scikit-learn missing for Phase 3 (plan .venv).
+- Default `python` on PATH can't run pypdf/markdown-it (Python 3.14 path is the correct tool); scikit-learn missing for Phase 3 (plan `.venv`).
 - Old repo READ-ONLY; never write to `D:\Abhii\Projects\Conversational-Memory-Intelligence-System-` or `D:\Abhii\Opencode`.
 
 ## Do Not Repeat
 - Do NOT re-run git init on MemoryOS (already exists).
-- Do NOT reproduce D1 (it exists in `D:\Abhii\Opencode\reconstruction\` — Phase 1 just copies & grafts).
+- Do NOT reproduce D1 (committed in Phase 1 `2823f40`).
 - Do NOT write to old repo / Opencode (read-only sources).
 - Do NOT run PDF pipeline with `python` (needs pythoncore-3.14).
 
 ## Verification Required
-- After commit: re-read SESSION_STATE (SHA updated), PLAN statuses match reality, no `TODO/PLACEHOLDER/UNKNOWN` placeholders left in docs (except deliberate UNKNOWN statements), `git log` shows single clean first commit, docs consistent with each other.
+- After Phase 2: `git status` clean, `git log --oneline` shows 3 commits, source catalog links verified, PDF 6+4 pages stable.
 
 ## Resume From Here
-Resume at **Phase 0 → finish files (see Next 3 Actions) → verify → commit → then Phase 1 (D1 merge)**. If you lose context, read `docs/RESUME.md`, `docs/SESSION_STATE.md`, and this file first — do NOT re-derive state from chat.
+Resume at Phase 2 → step 1 of Next 3 Actions. If context lost, read `docs/RESUME.md`, `docs/SESSION_STATE.md`, `CURRENT.md` — do NOT re-derive from chat.

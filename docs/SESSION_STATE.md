@@ -3,36 +3,37 @@
 > Canonical, machine-readable/human-readable state of this project. **The repository is the source of truth, not chat context.** If any file contradicts this one, SESSION_STATE.md wins (and the contradiction must be fixed).
 
 ## Last Updated
-- Date/time: 2026-08-08 13:45 (local)
+- Date/time: 2026-08-08 14:15 (local)
 - Current git branch: `main`
-- Current commit SHA: `docs(continuity)` initial commit (see Git State; SHA filled at first commit)
+- Current commit SHA: `2823f40` (`feat(d1): merged reconstruction`)
 
 ## Project
 - Project name: **MemoryOS** (course deliverable: *Conversational Memory Intelligence System*)
 - Overall objective: Build, from first principles, a production-grade conversational-memory system — persistent, retrievable, deletable memory for an AI assistant — delivered as a research-grade course repo (D1–D8) AND a coherent product ("MemoryOS").
-- Current milestone: none started (repository bootstrap in progress); see "Current Phase".
+- Current milestone: Phase 2 (D2 research copy) — Phases 0–1 complete.
 
 ## Current Phase
-- Phase number: **0 (bootstrap)** — partially done, checkpoint being committed
-- Phase name: Bootstrap MemoryOS repository
-- Current task: Continuity checkpoint per `IMP.md` (context-preservation workflow) — create continuity docs, verify, commit
-- Current subtask: writing docs/SESSION_STATE.md, PROJECT_MEMORY.md, CURRENT.md, DECISIONS.md, journal, PLAN.md, RESUME.md, AGENTS.md; README.md + .gitignore
-- **Exact point where execution resumes after this commit:**
-  1. Phase 0 remainder: port PDF build script + verify (see PLAN.md Phases)
-  2. Phase 1: merge D1 reconstruction (copy from `D:\Abhii\Opencode`) → PDFs
-  3. Then Phase 2…, each commits separately
+- Phase number: **2 (D2 research copy + catalog)** — NOT STARTED
+- Phase name: Copy old-repo research verbatim + sources catalog
+- Current task: copy `research/**` from old repo; write `sources_catalog.md` + `README.md`
+- Current subtask: (none — whole phase)
+- **Exact point where execution resumes:**
+  1. Copy `D:\Abhii\Projects\Conversational-Memory-Intelligence-System-\research\**` → `research\` (verbatim)
+  2. Write `research/sources_catalog.md` + `research/README.md`
+  3. Commit `feat(d2): research weeks 1-4 + sources catalog`
+  4. Phase 3: `.venv` + baseline run
 
 ## Overall Plan
-| Phase | Name | Status | Relevant commit (planned) | Important artifacts | Remaining work |
+| Phase | Name | Status | Relevant commit | Important artifacts | Remaining work |
 |---|---|---|---|---|---|
-| 0 | Bootstrap + checklist | [-] IN PROGRESS | `docs(continuity)` (this commit); `chore: bootstrap` (partial) | dirs, git init (done by user), plan/checkpoint docs (this commit) | README/.gitignore/AGENTS (in this commit), port `tools/build_pdfs.py` from temp build script; verify PDF pipeline |
-| 1 | D1 merged reconstruction | [ ] NOT STARTED | `feat(d1): merged reconstruction` | `reconstruction/01_problem.md` … `04_first_principles.md`, `sources.md`, two PDFs | Copy from `D:\Abhii\Opencode\reconstruction` (already rigorous) + graft old-repo evidence + regenerate PDFs |
-| 2 | D2 research copy + catalog | [ ] NOT STARTED | `feat(d2): research weeks 1-4 + sources catalog` | `research/**` (verbatim from old repo), `research/sources_catalog.md`, `research/README.md` | Copy old repo `research/` verbatim; write catalog |
-| 3 | D3 baseline run | [ ] NOT STARTED | `feat(d3): baseline run + reports` | `experiments/naive_baseline/` run, `baseline_results.csv`, `error_examples.jsonl`, `summary.json`, `baseline_protocol.md`, `productive_failure_report.pdf` | Create .venv, install scikit-learn+numpy, run `run_baseline.py`, write protocol + report |
-| 4 | D5 Genesis spine | [ ] NOT STARTED | `chore(genesis): spine initialized for MemoryOS` | `.genesis/**` (from old repo), MAPPING.md, reset CURRENT/KICKOFF | Copy `D:\Abhii\Opencode\.genesis` old spine; re-slice M1–M3 to Python/pytest demo commands; keep Approach-B brainstorm; invariants ×5; zero build loops until D4/D6 |
-| 5 | Product PRD + edge cases | [ ] NOT STARTED | `docs(product): PRD + edge cases` | `product/PRD.md`, `design/edge_cases.md` | Write PRD (R1–R8 → product capabilities) + exhaustive edge-case ledger mapped to R-capabilities and D6 acceptance tests |
-| 6 | Research passes R1/R2/R3 | [ ] NOT STARTED | `docs(research): verification passes` | dated addenda in `research/**` | R1 claim/citation verification, R2 D4-readiness (LoCoMo, Mem0, Letta, Zep, RRF %, pgvector ANNS), R3 product position |
-| 7 | Journal merge + gates | [ ] NOT STARTED | `docs(research): …` | `journal/2026-08-08-merge.md` (AI-assistance disclosure) | end-of-merge verification (PDF pipeline, baseline rerun, placeholder scan, dir diff, handbook §F checklist) |
+| 0 | Bootstrap + continuity | [x] COMPLETE | `docs(continuity)` (7bd37ca) | dirs, git init, docs/ + CURRENT + PLAN + AGENTS + README + .gitignore; tools/build_pdfs.py | — |
+| 1 | D1 merged reconstruction | [x] COMPLETE | `feat(d1)` (2823f40) | `reconstruction/*.md` (5), 2 PDFs (6p/4p), merged OQ9 + stage→req map | — |
+| 2 | D2 research copy + catalog | [ ] NOT STARTED | — | `research/**` (verbatim), catalog, README | Copy; write; commit |
+| 3 | D3 baseline run | [ ] NOT STARTED | — | venv, baseline artifacts, reports, PDF | Run, write, commit |
+| 4 | D5 Genesis spine | [ ] NOT STARTED | — | `.genesis/**`, invariants ×5 | Adopt, re-slice, commit |
+| 5 | Product PRD + edge cases | [ ] NOT STARTED | — | PRD.md, edge_cases.md | Write, commit |
+| 6 | Research passes R1/R2/R3 | [ ] NOT STARTED | — | dated addenda | Verify, commit |
+| 7 | Journal merge + gates | [ ] NOT STARTED | — | journal/merge.md, verification | Commit |
 
 ## Completed Work
 (Verified — do NOT redo.)
