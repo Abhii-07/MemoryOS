@@ -1,0 +1,45 @@
+# ---- Local project files ----
+
+# Environment / secrets — never commit
+.env
+.env.*
+*.secret
+*credentials*.json
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.so
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tooling scratch (PDF pipeline intermediates)
+/tools/tmp/
+*.tmp
+
+# Keep deliverable PDFs tracked (they are generated but final artifacts).
+# If you *must* ignore a specific generated PDF, list it here explicitly.
+
+# Generated baseline report files are real artifacts — keep tracked.
