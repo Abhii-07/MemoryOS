@@ -21,6 +21,14 @@ handbook filenames, add thin pointer files (`done.html`, `plan.md`,
 `implementation_notes.html`, plus `context_graph/` and `loops/` directories) that
 reference the canonical files above. Do not maintain two divergent copies.
 
+**Decision (2026-08-08, user-approved).** This table is the formal
+instructor-approval record for the handbook §7 required artifacts (`done.html`,
+`plan.md`, `implementation_notes.html`, `context_graph/`, `loops/`); the kit is a
+different tool from the handbook's workflow spec, so the kit names stand. The
+remaining §7 minimum evidence (≥3 completed loops, checkpoints, recovery record,
+gates with verification links) is delivered by G-M1…G-M3 and recorded in the
+journal + `checkpoints/` as the loops run.
+
 Additional kit files beyond the handbook list (present for tooling):
 `genesis.md` (the G0–G6 ritual), `KICKOFF.md` (cold-session resume prompt),
 `KICKOFF-INTERVIEW.md` (pre-ritual interview), `AGENT-ADAPTERS.md` (per-agent
