@@ -1,0 +1,17 @@
+{
+  "$comment": "nodes=modules, edges=[cause,effect] where cause is imported-by effect. ADD invariants by hand.",
+  "project": "memory_os",
+  "generated": "2026-08-08T14:30:00.000Z",
+  "nodes": [],
+  "edges": [],
+  "invariants": {
+    "tenant_isolation": "Every memory write and read query must explicitly restrict scope using a validated tenant_id (never query without a namespace filter).",
+    "privacy_deletion_guarantee": "A DELETE admission action or user deletion request must physically purge vector and relational records from storage (soft-delete flags are forbidden for privacy deletion).",
+    "retrieval_performance": "Retrieval operations must execute without blocking on intermediate LLM calls (deterministic hybrid search and RRF only) and complete in < 150ms.",
+    "token_budget_per_turn": "Context injection per turn must never exceed the configured zone budget; budgets are enforced (a hard cap), not aspirational.",
+    "pii_pre_post_guardrail": "PII and sensitive content must be prevented at admission AND at retrieval/injection (pre- and post-guards); no sensitive content may reach model context."
+  },
+  "freeze_boundary": [
+    "src/memory_os/**"
+  ]
+}

@@ -1,0 +1,11 @@
+# CURRENT
+- active_loop: NONE
+- target: <milestone-id>
+- iteration: 0
+- last_gate: —
+- last_action: genesis spine adopted and re-sliced to pytest (merge 2026-08-08); no milestone started
+- next_action: wait for design stability (D4) — no BUILD loops until then
+- model: gemini-3.5-flash
+- tokens_used: 0
+- tokens_budget: 50000
+- skills_loaded: []
