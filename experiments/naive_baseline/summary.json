@@ -1,0 +1,15 @@
+{
+  "total_cases": 10,
+  "recall_at_5": 1.0,
+  "precision_at_1": 0.8571428571428571,
+  "contradiction_failure_rate": 0.3333333333333333,
+  "cold_start_false_positive_rate": 0.5,
+  "sensitive_leak_rate_retrieval": 1.0,
+  "sensitive_leak_rate_injection": 1.0,
+  "task_level_pass_rate": 0.6666666666666666,
+  "latency_p50_s": 0.0007422999478876591,
+  "latency_p95_s": 0.0008434000192210078,
+  "final_storage_bytes": 112,
+  "final_storage_count": 2,
+  "avg_tokens_used": 29.2
+}

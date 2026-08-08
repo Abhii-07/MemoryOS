@@ -104,6 +104,8 @@ def main():
         return
     build("01_problem.md", "problem_reconstruction.pdf", recon, "Problem Reconstruction")
     build("02_timeline.md", "historical_timeline.pdf", recon, "Historical Timeline")
+    build("productive_failure_report.md", "productive_failure_report.pdf",
+          REPO / "experiments" / "naive_baseline", "Naive Baseline — Productive Failure Report")
     print("done")
 
 
