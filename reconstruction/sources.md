@@ -31,18 +31,18 @@
 | [P:8] | J. S. Park, J. C. O'Brien, C. J. Cai, et al. *Generative Agents: Interactive Simulacra of Human Behavior.* 2023. | 2304.03442 |
 | [P:9] | C. Packer, S. Wooders, K. Lin, et al. *MemGPT: Towards LLMs as Operating Systems.* 2023. | 2310.08560 |
 | [P:10] | J. Johnson, M. Douze, H. Jégou. *Billion-scale Similarity Search with GPUs.* 2017. | 1702.08734 |
-| [P:11] | Y. A. Malkov, D. A. Yashunin. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs.* 2018. | 1603.09320 |
+| [P:11] | Y. A. Malkov, D. A. Yashunin. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs.* 2016 (TPAMI 2018). | 1603.09320 |
 
 ## How claims map to sources
 
 | Claim type (used in the reconstruction docs) | Source basis |
 |---|---|
-| Context window is finite; attention is bounded | [P:4] (structural property) |
+| Context window is finite; attention is bounded | [P:4] (structural property of the architecture, not the paper's stated thesis) |
 | Stateless model calls cannot remember across calls | [P:1][P:2][P:3][P:4][P:9] |
-| Replay scales cost with history; retrieval bounds context | [P:5] |
+| Replay scales cost with conversation length | [P:4] (structural) + `[O]` observed in baseline runs |
 | Retrieval into the model's own memory | [P:6][P:7] |
-| Retrieval-augmented pipeline framing | [P:5] |
-| Lifecycle: memory consolidation and reflection | [P:8] |
+| Retrieval-augmented pipeline framing (ground NLG in an external corpus) | [P:5] |
+| Lifecycle: observation → reflection → summarization pipeline | [P:8] — Generative Agents use "reflection", not "consolidation" (verification pass R1) |
 | Memory hierarchy (main memory / paging) | [P:9] |
 | Content-addressable external memory with read/write | [P:1][P:2][P:3] |
 | Indexing/similarity-search substrate | [P:10][P:11] |

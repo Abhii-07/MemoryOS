@@ -131,7 +131,7 @@ overshoot must be impossible (enforced, not aspirational).
 **From which pressure.** A2/A4 both suffer because retained content never
 changes: contradictions coexist, superseded preferences survive, and the
 store grows without bound (C8). The literature's lifecycle mechanisms —
-reflection and consolidation (Generative Agents [P:8]), paging/hierarchical
+reflection and summarization (Generative Agents [P:8]), paging/hierarchical
 memory (MemGPT [P:9]), and the general notion of forgetting/decay — exist
 precisely to answer this. [A: decay policy]
 
@@ -139,7 +139,9 @@ precisely to answer this. [A: decay policy]
 statement invalidates an old one), **consolidation** (many low-level items
 into higher-level ones), **decay/expiration** (items lose relevance or
 expire), and **deletion** (policy-driven removal). It must not reinforce
-errors by repeatedly retrieving them (error reinforcement [P:8][A]).
+errors by repeatedly retrieving them (error reinforcement — a recognised
+follow-on concern argued in retrieval-decision literature, not raised by
+Generative Agents themselves). [A: error-reinforcement guard]
 
 **Minimum shape.** Background jobs and update paths with defined semantics
 for each lifecycle operation; each operation recorded for observability.

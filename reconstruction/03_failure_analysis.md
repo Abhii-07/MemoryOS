@@ -90,7 +90,8 @@ precedence]
 growing transcript is truncated — and the discarded content is the oldest,
 which is often the most consequential (constraints, commitments). Contradiction
 is never arbitrated: replay carries both poles and no mechanism to resolve
-them. Cost and latency scale linearly with history [P:5], degrading p95
+them. Cost and latency scale linearly with history length [P:4][O: measured
+in naive-baseline runs], degrading p95
 latency and per-tenant economics as conversation length grows.
 
 **Constraints violated.** C1 (overflow and truncation), C2 (latency), C3

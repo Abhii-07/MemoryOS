@@ -33,7 +33,7 @@ durable substrate between model and user.
 | R1 Admission | "Worth keeping?" classification at ingest; user sees *why* something was kept or dropped | admission logs surfaced; threshold tunable |
 | R2 Representation | Memory records with type, when/where it came from, confidence | memory inspector displays fields |
 | R3 Safe isolated storage + deletion | Hard delete request physically removes memory, no traces; per-tenant separation | deletion test: memory not retrievable after delete |
-| R4 Multi-signal retrieval (RRF hybrid) | Hybrid search; preferences/purpose/fact typed ranking | 91%+ recall@10 on LoCoMo-like eval [A: verify in R2] |
+| R4 Multi-signal retrieval (RRF hybrid) | Hybrid search; preferences/purpose/fact typed ranking | LoCoMo-eval band: ≥68% LLM-judge accuracy (Mem0 parity) and ≥ recall@5 1.0 / precision@1 ≥0.85 on in-repo eval; 91%+ recall@10 hybrid figure is a practitioner benchmark (Supermemory hybrid-search guide, 2026-04) [O: verified in R2] |
 | R5 Token-budget context | Zone-budgeted context (conversation / episodic / semantic) — never over budget | enforce; no overshoot |
 | R6 Lifecycle | `ADD/UPDATE/DELETE/NOOP` per utterance; superseded via `valid_until`; decay | update invalidates old; decay policy on a schedule |
 | R7 Observability | Decision traces: what was admitted/retrieved/injected and why | trace log inspectable per turn |

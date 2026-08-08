@@ -84,7 +84,8 @@ The historical record for replay-based approaches is long [O].
    contradiction, and stale claim is re-injected with equal weight. The model
    has no reason to prefer a current statement over an older one.
 3. **Unbounded cost and latency.** Token cost and per-token processing grow
-   linearly with history length [P:5], and degrade p95 latency.
+   linearly with history length [P:4][O: observed in naive-baseline latency
+   runs], and degrade p95 latency.
 4. **No persistence.** Replay works only within the window; it does not and
    cannot govern what *should* be retained — everything is retained,
    which is equivalent to nothing is curated.
@@ -142,8 +143,8 @@ context budgeting, lifecycle, isolation, observability.
 **What it now must be.** Retrieval-only systems accumulate data; the
 literature's next steps are explicitly about *managing the accumulation*:
 
-- **Lifecycle and consolidation.** Generative Agents maintain an
-  observation→reflection→summarization pipeline that consolidates a growing
+- **Lifecycle: reflection and summarization.** Generative Agents maintain an
+  observation → reflection → summarization pipeline that condenses a growing
   stream into durable higher-level memory, instead of replaying every
   observation raw [P:8].
 - **Memory hierarchy and paging.** MemGPT treats context as the "main

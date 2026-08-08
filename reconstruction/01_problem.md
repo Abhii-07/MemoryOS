@@ -65,7 +65,7 @@ Leaving the problem unsolved has four compounding consequences:
 3. **Unbounded operational cost.** Replaying or re-embedding an ever-growing
    history drives prompt-token usage, latency, and storage cost upward
    without bound, while adding diminishing (then negative) value as context
-   becomes polluted. [P:5][O][A: token-budget discipline]
+   becomes polluted. [P:4][O][A: token-budget discipline]
 
 4. **Governing an uncontrolled accumulation.** If the assistant retains
    everything indiscriminately, it simultaneously stores personal data it has
@@ -136,7 +136,7 @@ assumption pending the naive baseline.
   observation of external-memory architectures. [P:3][P:4][P:9]
 - **Long-context replay degrades quality.** Injecting unbounded history
   dilutes attention and increases both cost and latency; retrieval-based
-  systems exist precisely because context is a constrained resource. [P:4][P:5]
+  systems exist precisely because the window is a constrained resource. [P:4]
 - **Retrieval quality depends on what was stored and how it was ranked.** A
   retrieval-only system that stores everything inherits the weaknesses of its
   ranking signal — single-similarity retrieval returns plausible-but-wrong
@@ -272,7 +272,7 @@ the problem is pinned down:
 5. How do decay and deletion interact with a hard deletion guarantee
    (retention policy vs. graceful forgetting)?
 6. How is "this memory is wrong" corrected end-to-end, including downstream
-   behavior, without reintroducing the error? [P:8][A: error reinforcement]
+   behavior, without reintroducing the error? [A: error reinforcement]
 7. In a multi-tenant setting, is isolation enforced at storage, at indexing,
    at retrieval, or all three — and what is the cost of each?
 8. What evidence would *falsify* the premise that admission and ranking

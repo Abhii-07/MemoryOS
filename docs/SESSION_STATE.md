@@ -132,9 +132,9 @@ To hold ALL implementation (check in Phase 4/5 gate):
 
 ## Research Status
 - Sources checked (old repo + handbook): weeks 1–4 landscape, RRF/BLER, naive TF-IDF+cosine, PII benchmark notes.
-- Claims VERIFIED (this session): tool-chain works (baseline never run; python3.14 present), no mojibake, Chrome path OK.
-- Claims needing verification (Phase 6 R1–R3): ~40% dense fail, 91% recall@10 RRF, PIIBench 0.96→0.18, production page-rank/hybrid superiority.
-- Conclusions (preliminary, for D1–D3): memories = retrieved + injected + consolidated; retrieval = hybrid dense+sparse+RRF (design), naive gap demonstrated by baseline.
+- Claims VERIFIED: tool-chain works, no mojibake, Chrome path OK. **Phase 6 passes DONE (2026-08-08): R1** citations/claims (11/11 papers verified; 2 claim edits — "~40% dense-fail" NOT in RAG paper: practitioner-origin; Generative Agents terms corrected to reflection/summarization); **R2** D4-readiness (LoCoMo ACL-2024 + SOTA numbers, Mem0 graph + expiration_date, Letta v0.16.8, Zep/Graphiti bi-temporal, RRF k=60 with 91%@10 corrected to Supermemory practitioner blog, pgvector HNSW: 10–60ms @ 1M–10M vec, MIRIX = memory-system paper not a benchmark); **R3** product (name corrected: Supermemory; OWASP LLM Top 10 2025 = LLM01–LLM10, no ASI06 — cite LLM04/LLM08).
+- Unverified items remaining: PIIBench 0.96→0.18 OOD figure (flagged in catalog for D4-era verification).
+- Conclusions (preliminary): memories = retrieved + injected + consolidated; retrieval = hybrid dense+sparse+RRF; naive gap demonstrated by baseline (falsification recorded).
 
 ## Git State
 - branch: main

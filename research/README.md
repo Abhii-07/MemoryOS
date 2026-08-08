@@ -35,8 +35,8 @@ Each week has: `challenge_notes.md` (what the week set out to answer), `componen
 | Privacy, safety, isolation | Scanned — threat landscape is current & named (MemoryGraft, MINJA, Cisco MemoryTrap) | week-4 |
 | Memory model & representation | Not scanned by design — folded into D4 | (D4) |
 
-## Verification pending (Phase 6 passes)
+## Verification passes (Phase 6) — done 2026-08-08
 
-- [ ] R1: verify every `sources_catalog.md` row's claims + `[P:n]` citations used in D1.
-- [ ] R2: fill D4-readiness rows — LoCoMo benchmark, Mem0 lifecycle evolution, Letta (MemGPT) current state, Zep/Graphiti temporal edges, RRF recall numbers, pgvector/ANNS at scale.
-- [ ] R3: product positioning vs Supermemory / Mem0 / Zep; API + retention story for the PRD.
+- [x] R1: every `sources_catalog.md` claim + `[P:n]` citation used in D1 verified (11/11; 2 claim-level edits) → `passes/2026-08-08-R1-citation-verification.md`
+- [x] R2: D4-readiness rows — LoCoMo benchmark, Mem0 lifecycle, Letta (MemGPT) current state, Zep/Graphiti temporal edges, RRF recall numbers, pgvector/ANNS at scale → `passes/2026-08-08-R2-d4-readiness.md`
+- [x] R3: product positioning vs Supermemory / Mem0 / Zep; API + retention story for the PRD → `passes/2026-08-08-R3-product-positioning.md`
