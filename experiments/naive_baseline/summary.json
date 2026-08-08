@@ -7,8 +7,8 @@
   "sensitive_leak_rate_retrieval": 1.0,
   "sensitive_leak_rate_injection": 1.0,
   "task_level_pass_rate": 0.6666666666666666,
-  "latency_p50_s": 0.0007422999478876591,
-  "latency_p95_s": 0.0008434000192210078,
+  "latency_p50_s": 0.0007341000018641353,
+  "latency_p95_s": 0.0008012999314814806,
   "final_storage_bytes": 112,
   "final_storage_count": 2,
   "avg_tokens_used": 29.2

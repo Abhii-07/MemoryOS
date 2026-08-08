@@ -138,9 +138,9 @@ To hold ALL implementation (check in Phase 4/5 gate):
 
 ## Git State
 - branch: main
-- latest commit: (none until this checkpoint; then `docs(continuity)`)
-- uncommitted: everything in this checkpoint -> commit now
-- what to commit next: Phase 0 remaining files (tools/build_pdfs.py) then Phase 1 artifacts.
+- latest commit: `39612c9` (Phase 6 `docs(research): verification passes R1-R3`)
+- uncommitted: Phase 7 in progress → journal/merge.md + rerun baseline results → commit now
+- what to commit next: Phase 7 (`docs(merge): final journal + checklist`) as commit #8
 
 ## Resume Instructions
 To resume this project:

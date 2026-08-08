@@ -3,64 +3,53 @@
 > One question: **"Where exactly are we RIGHT NOW?"** — keep this file extremely practical. If chat context compacts, open this file and continue.
 
 ## Current Objective
-Execute the locked 7-phase merge plan (Phase 0 → D1..D8) in MemoryOS; verify claims per handbook §12 (gates: citations, reproducible baseline, tenant isolation, deletion propagation, AI-assistance disclosure). Committing in progress: Phase 6 (research verification passes R1/R2/R3).
+7-phase merge plan COMPLETE (Phases 0–7, one commit each). Repository is the single source of truth for MemoryOS; committing final Phase 7 close-out (merge journal + verified baseline results).
 
 ## Current Phase
-Phase 6 (research verification passes) — Phases 0–5 ✓ (commits `7bd37ca` … `ed7ac56`); R1/R2/R3 verdicts collected and applied; **docs + current files edited, commit pending**.
+Phase 7 (final merge journal + end-of-merge checks) — ALL phases ✓ (8 commits expected once Phase 7 lands). Phase 6 = `39612c9`.
 
 ## Current Task
-Commit the Phase 6 unit: `research/passes/` addenda (R1 citation verification, R2 D4-readiness, R3 product positioning) + claim corrections applied to `reconstruction/*.md`, `research/sources_catalog.md`, `research/README.md`, `product/PRD.md`, `docs/SESSION_STATE.md`, `CURRENT.md`, journal.
+Commit Phase 7: `journal/2026-08-08-merge.md` + rerun baseline artifacts + SESSION_STATE/CURRENT updates.
 
 ## Last Completed Action
-[2026-08-08] Ran R1 + R2/R3 as web research passes (fresh subagents, current sources, Aug 2026):
-- R1: 11/11 `[P:n]` citations correct (P:11 arXiv 2016/TPAMI 2018). 2 claim-level fixes — "40% dense-fail" NOT in RAG paper (practitioner origin); Generative Agents "consolidation"/"error reinforcement" not paper terms → re-anchored to reflection/summarization + `[A]`.
-- R2: LoCoMo (ACL 2024; SOTA numbers), Mem0 `expiration_date` (hides-not-deletes), Letta all fine, Zep/Graphiti bi-temporal supported, RRF k=60 standard + "91% recall@10" = Supermemory blog (2026-04), pgvector HNSW scale numbers, MIRIX corrected (memory-system paper, not a benchmark).
-- R3: vendor is **Supermemory** (not "Supertone" — an unrelated Korean audio company); OWASP LLM Top 10 (2025) has **no ASI06** — cite LLM02/LLM08 for memory-risk.
-Edits applied to D1 docs (sources.md + 3 bodies), catalog rows (MIRIX, LoCoMo, OWASP, P:5/P:8), research/README checkboxes, PRD R4 acceptance row.
-
-## Last Completed Action (commits)
-- Phase 5 committed `ed7ac56 docs(product): PRD + edge cases`.
-- Phase 4 `aaf37f0`, Phase 3 `1ff47a5`, Phase 2 `5f9677e`, Phase 1 `2823f40`, Phase 0/`7bd37ca`.
+[2026-08-08] End-of-merge checks all PASSED:
+- PDF pages: problem 6 / timeline 4 / failure 3 (pypdf).
+- Baseline rerun via `.venv`: metrics EXACT (recall@5 1.0, precision@1 0.857, contradiction 0.33, cold-start 0.5, leaks 1.0, task 0.67); only latency timers drifted (p50 0.742→0.734 ms, p95 0.843→0.801 ms) → reproducible.
+- Placeholder scan: 0 real hits; UTF-8: 0 mojibake (64 files).
+- Dir diff vs old repo: research 18/18 files present +2 new (README, catalog); experiments code 5/5 + artifacts; nothing missing.
+- Merge journal written (`journal/2026-08-08-merge.md`): sources/decisions D-011…D-014, AI-assistance disclosure, falsification record, §F acceptance table.
 
 ## Last Command Executed
-`git -C D:\Abhii\Projects\MemoryOS status` → working tree: 8 modified + `?? research/passes/` (awaiting this commit).
+Baseline rerun via `.venv\Scripts\python.exe run_baseline.py` in `experiments/naive_baseline` → status "M" for summary/results/error_examples (timing-only diff) + `?? journal/2026-08-08-merge.md`.
 
 ## Last Meaningful Result
-All changes staged (pending commit). `git status --short` shows exactly the Phase 6 set.
-(If baseline reproduces: last committed numbers in `experiments/naive_baseline/summary.json`.)
+Phase 7 checklist complete; working tree = exactly the Phase 7 set.
 
 ## Currently Modified Files (for this commit)
-- `docs/SESSION_STATE.md` (Research Status → R1/R2/R3 DONE; unverified: PIIBench figure)
-- `research/passes/2026-08-08-R1-citation-verification.md` (NEW)
-- `research/passes/2026-08-08-R2-d4-readiness.md` (NEW)
-- `research/passes/2026-08-08-R3-product-positioning.md` (NEW)
-- `reconstruction/sources.md`, `01_problem.md`, `02_timeline.md`, `03_failure_analysis.md`, `04_first_principles.md` (claim corrections)
-- `research/sources_catalog.md`, `research/README.md` (status → verified)
-- `product/PRD.md` (R4 acceptance row corrected)
+- `journal/2026-08-08-merge.md` (NEW)
+- `experiments/naive_baseline/{summary.json, baseline_results.csv, error_examples.jsonl}` (rerun)
+- `docs/SESSION_STATE.md` (Git State)
+- `CURRENT.md` (this file)
 
 ## What I Was About To Do Next
-Commit Phase 6 as `docs(research): verification passes`; then update `journal/2026-08-08-session.md`.
+`git add -A` → commit `docs(merge): final journal + checklist` → verify 8 commits → final report to user.
 
 ## Immediate Next 3 Actions
-1. `git add -A` + commit `docs(research): verification passes R1-R3` in `D:\Abhii\Projects\MemoryOS`.
-2. Append journal entry (Phase 6) to `journal/2026-08-08-session.md` + verify `git log` shows 7 commits.
-3. Phase 7: final merge journal + end-of-merge checks (PDF 6/4/3 pages, baseline reproducibility, placeholder scan, dir diff vs old repo, handbook §F checklist) + final report.
+1. Commit Phase 7 (above message) and confirm `git log --oneline` = 8.
+2. Report to user: all 7 phases + checks done; list what's next (D4 design → M1–M3 build per Genesis).
+3. (Long-run) Genesis M1–M3 = D6 build work; only after D4 design stabilizes.
 
 ## Known Problems
-- Default `python` on PATH can't run pypdf/markdown-it (Python 3.14 path is the correct tool); scikit-learn missing on 3.14 — use `.venv` for baseline runs.
-- Old repo READ-ONLY; never write to `D:\Abhii\Projects\Conversational-Memory-Intelligence-System-` or `D:\Abhii\Opencode`.
-- PIIBench 0.96→0.18 OOD figure still unverified (flagged in catalog; may verify in D4 era).
+- Default `python` (3.11) lacks pypdf/markdown-it — use pythoncore-3.14 path; baseline needs `.venv`.
+- Old repo + `D:\Abhii\Opencode` READ-ONLY forever; never write.
+- PIIBench 0.96→0.18 unverified (flagged in catalog; can verify in D4 era).
 
 ## Do Not Repeat
-- Do NOT re-run git init on MemoryOS (already exists).
-- Do NOT reproduce D1–D3 work (committed).
-- Do NOT write to old repo / Opencode (read-only import sources).
-- Do NOT run PDF pipeline with `python` (needs pythoncore-3.14).
-- Do NOT cite the "40%" or "91% recall@10" figures as paper-backed; they are practitioner-origin (`[O]`, Supermemory 2026-04) per R1/R2.
+- No re-init, no re-D1..D3, no writes to old sources, no PDF pipeline via 3.11, no `python` for baseline.
+- Do NOT re-run R1–R3 unless sources change; verdicts are committed (see passes/).
 
 ## Verification Required
-- After commit: `git status` clean, `git log --oneline` shows 7 commits (head = Phase 6).
-- Phase 6 acceptance: R1 → every `[P:n]` in D1 resolves in sources.md; R2 → catalog rows no longer `(pending)`-except-PIIBench; R3 → PRD identifiers factually correct.
+- `git status` clean; `git log --oneline` = 8 commits; `CURRENT.md` shows Phase 7 done.
 
 ## Resume From Here
-`git add -A` → commit Phase 6 → journal → Phase 7 start (journal merge + gates). If context lost, read `docs/RESUME.md`, `docs/SESSION_STATE.md`, `CURRENT.md` — do NOT re-derive from chat.
+Commit Phase 7, then hand over. If context lost: `docs/RESUME.md` → `docs/SESSION_STATE.md` → `CURRENT.md` → `journal/2026-08-08-merge.md`.
