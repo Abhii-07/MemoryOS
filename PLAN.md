@@ -29,7 +29,7 @@
 
 **Objective:** Final D1 (problem reconstruction) as merged text; regenerate both PDFs from the merged markdown (source of truth = md).
 
-**Deliverables:** `reconstruction/01_problem.md` (incl. old-repo `[O]` personal evidence), `02_timeline.md`, `03_failure_analysis.md`, `04_first_principles.md` (incl. stage→requirement table + OQ9 user memory controls), `sources.md`; PDFs `problem_reconstruction.pdf`, `historical_timeline.pdf`.
+**Deliverables:** `reconstruction/01_problem.md` (incl. old-repo `[O]` personal evidence), `02_timeline.md`, `failure_analysis.md`, `first_principles.md` (incl. stage→requirement table + OQ9 user memory controls), `sources.md`; PDFs `problem_reconstruction.pdf`, `historical_timeline.pdf`.
 
 **Acceptance criteria:**
 - All claims tagged; hand-crafted approach list A–E with reasoning.

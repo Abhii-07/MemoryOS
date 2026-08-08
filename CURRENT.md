@@ -16,7 +16,7 @@ Final verification (hash, mojibake, EC-mapping sanity), then `git add -A` + comm
 - Copied old-repo D4 **byte-identical** (15 files hash-verified): 3-part system design, data_model, api_contracts, threat_model, 6 ADRs, 3 PDFs (15p/4p/4p).
 - Fixed ASI06 error (R3-verified): `threat_model.md` + ADR-004 now cite OWASP LLM-04/LLM-08 with a dated correction note.
 - Created `design/sprint_plan.md` (missing handbook artifact): maps D4 §15 M1–M7 onto Genesis M1–M3 with demo commands, freeze boundaries, EC-01…18 mapping, risk watch.
-- Created `design/design_records/ADR-007-local-embeddings.md` (384-d deterministic local embedder) + dimension notes in `data_model.md`.
+- Created `design/decision_records/ADR-007-local-embeddings.md` (384-d deterministic local embedder) + dimension notes in `data_model.md`.
 - Harmonized `.genesis/PLAN.md` M1/M2 with the single `memories` table + Postgres-only stack; added DECISIONS D-015/D-016; updated SESSION_STATE.
 
 ## Last Command Executed
@@ -26,7 +26,7 @@ Final verification (hash, mojibake, EC-mapping sanity), then `git add -A` + comm
 D4 artifact set complete in `MemoryOS/design/` (docs + records + PDFs). Old repo untouched (read-only respected).
 
 ## Currently Modified Files (for this commit)
-- NEW: `design/system_design_part{1,2,3}.md`, `design/data_model.md`, `design/api_contracts.md`, `design/threat_model.md`, `design/system_design.pdf`, `design/architecture.pdf`, `design/data_flow.pdf`, `design/design_records/ADR-001…006`, `design/sprint_plan.md`, `design/design_records/ADR-007-local-embeddings.md`
+- NEW: `design/system_design_part{1,2,3}.md`, `design/data_model.md`, `design/api_contracts.md`, `design/threat_model.md`, `design/system_design.pdf`, `design/architecture.pdf`, `design/data_flow.pdf`, `design/decision_records/ADR-001…006`, `design/sprint_plan.md`, `design/decision_records/ADR-007-local-embeddings.md`
 - MODIFIED: `docs/DECISIONS.md` (D-015/16), `docs/SESSION_STATE.md`, `.genesis/PLAN.md`, `CURRENT.md`
 
 ## What I Was About To Do Next

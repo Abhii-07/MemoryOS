@@ -14,7 +14,7 @@ MemoryOS = a persistent **conversational memory intelligence system** for AI ass
 
 ## Core Concepts
 - **Memories = retrieved + injected + consolidated.** Retrieval is a search problem; injection is a context-budget problem; consolidation is a summarization/edit problem.
-- **R1–R8** (requirements, handbook): each maps to product capability (see `reconstruction/04_first_principles.md`).
+- **R1–R8** (requirements, handbook): each maps to product capability (see `reconstruction/first_principles.md`).
 - **C1–C8** (constraints) — e.g., tenant isolation, latency budget, memory lifetime.
 - **Deliverable cycle (handbook):** D1 problem–design reconstruction; D2 research; D3 naive baseline; D4 full design; D5 Genesis (this repo's `.genesis`); D6 implementation + correctness; D7 journal; D8 transfer docs.
 - **Evidence discipline:** `[P: n]` paper, `[A: …]` assumption, `[O]` verified observation — tagging mandatory in deliverables.

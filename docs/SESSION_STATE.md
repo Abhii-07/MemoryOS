@@ -42,7 +42,7 @@
 
 ## Completed Work
 (Verified — do NOT redo.)
-- [x] D1 reconstruction authored and verified in `D:\Abhii\Opencode\reconstruction\`: `01_problem.md`, `02_timeline.md`, `03_failure_analysis.md`, `04_first_principles.md`, `sources.md` + generated `problem_reconstruction.pdf` (6 pages), `historical_timeline.pdf` (4 pages). Contains C1–C8, R1–R8, 5 candidate approaches (A–E), evidence tags `[P:…]`/`[A:…]`/`[O]`.
+- [x] D1 reconstruction authored and verified in `D:\Abhii\Opencode\reconstruction\`: `01_problem.md`, `02_timeline.md`, `failure_analysis.md`, `first_principles.md`, `sources.md` + generated `problem_reconstruction.pdf` (6 pages), `historical_timeline.pdf` (4 pages). Contains C1–C8, R1–R8, 5 candidate approaches (A–E), evidence tags `[P:…]`/`[A:…]`/`[O]`.
 - [x] Genesis scaffolded in `D:\Abhii\Opencode\.genesis` via kit `scaffold.sh` (files: PLAN.md, DONE.html, context-graph.json, IMMUNE.md, KICKOFF.md, LOOPS.md, MAPPING.md, README.md, implementation-notes.html, wiki/, decisions/, checkpoints/).
 - [x] Old repo (`D:\Abhii\Projects\Conversational-Memory-Intelligence-System-`) inspected **read-only**; research weeks 1–4, naive_baseline, Design, .genesis identified.
 - [x] Analysis: no mojibake in old repo files (`U+FFFD` scan clean).

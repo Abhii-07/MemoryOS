@@ -26,8 +26,8 @@
 | Tool | Category | Relevance | Appears in |
 |---|---|---|---|
 | pgvector (PostgreSQL extension) | Vector store | Candidate D6 store: HNSW + SQL + tenant isolation in one system | week-2 |
-| FAISS | Approximate nearest neighbor library | Retrieval substrate for baseline & design — [P:10] | week-2, 03_failure_analysis |
-| HNSW | Graph-based ANN index | Index algorithm — [P:11] | week-2, 03_failure_analysis |
+| FAISS | Approximate nearest neighbor library | Retrieval substrate for baseline & design — [P:10] | week-2, failure_analysis |
+| HNSW | Graph-based ANN index | Index algorithm — [P:11] | week-2, failure_analysis |
 | RRF (Reciprocal Rank Fusion) | Rank fusion | Dense+sparse hybrid ranking candidate — [P:5] discussion | week-2 |
 
 ## Papers / primary sources (map to `[P:n]` tags in D1)

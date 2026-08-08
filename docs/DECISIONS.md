@@ -97,7 +97,7 @@ Date: 2026-08-08
 Status: ACCEPTED
 
 ### Decision
-Merged `reconstruction/01_problem.md` … `04_first_principles.md` (from Opencode) is the D1 canonical text; append old repo's personal `[O]` evidence rows and "stage→requirement" mapping into `04_first_principles.md`.
+Merged `reconstruction/01_problem.md` … `first_principles.md` (from Opencode) is the D1 canonical text; append old repo's personal `[O]` evidence rows and "stage→requirement" mapping into `first_principles.md`.
 
 ### Context
 New D1 (this session) already rigorous (C1–C8, R1–R8, approaches A–E, tags); old repo provided an underexisting map.
@@ -216,7 +216,7 @@ Status: ACCEPTED
 User provided a near-complete D4 in the old repo (`design/`, authored with an external LLM): three-part system design (sections 1–16), data model, API contracts, threat model, 6 ADRs, and 3 rendered PDFs (system_design 15p, architecture 4p, data_flow 4p). Handbook artifact `sprint_plan.md` was missing everywhere — not only in the old repo. Verification pass R3 (2026-08-08) also proved the old draft's "OWASP 2026 ASI06" citation is wrong (no such taxonomy slot; memory risk = LLM-04/LLM-08).
 
 ### Decision
-- Copy the old D4 set **verbatim** into `MemoryOS/design/` (byte-identical, hash-verified) + `design_records/` (15 files).
+- Copy the old D4 set **verbatim** into `MemoryOS/design/` (byte-identical, hash-verified) + `decision_records/` (15 files).
 - Rework only what MemoryOS needs: (1) create `design/sprint_plan.md` mapping D4 §15 M1–M7 onto Genesis M1–M3; (2) fix the ASI06→LLM-04/LLM-08 citations in `threat_model.md` + ADR-004 (per R3); (3) add ADR-007 (local deterministic embeddings, 384-d) and dimension note to `data_model.md` (prod-consistent, no external service); (4) harmonize Genesis M1 schema language with the single `memories` table.
 - Stack: **Postgres+pgvector only** (no SQLite dev branch) per user's prod-consistency decision.
 

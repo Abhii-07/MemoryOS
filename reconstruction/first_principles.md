@@ -2,7 +2,7 @@
 
 > Deliverable 1, Part 4. We derive — from the problem statement
 > (`01_problem.md`), the historical chain (`02_timeline.md`), and the
-> measured-in-design failures (`03_failure_analysis.md`) — the **minimum
+> measured-in-design failures (`failure_analysis.md`) — the **minimum
 > set of capabilities** any credible solution to the conversational-memory
 > problem must have. The argument runs from constraints and failures to
 > capabilities; it does not assume any particular architecture.
@@ -255,7 +255,7 @@ has not seen the target architecture can explain why it is needed, which
 simpler designs fail, and what requirements follow from those failures."*
 
 - Why needed → `01_problem.md` (bottleneck, users, consequences)
-- Which simpler designs fail → `03_failure_analysis.md` (A1–A5, each with
+- Which simpler designs fail → `failure_analysis.md` (A1–A5, each with
   failure + violated constraint)
 - What requirements follow → this document (R1–R8, each traced to a
   constraint or failure)

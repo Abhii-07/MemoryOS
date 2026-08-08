@@ -33,7 +33,7 @@
 ## Actions taken (file edits, 2026-08-08)
 
 1. `reconstruction/sources.md` — P:11 note "(arXiv 2016 / TPAMI 2018)"; claim table reworded: P:4 claim is "structural property implied by the architecture"; P:5 claim limited to grounding generation in corpora; added explicit "[O] practitioner" row for hybrid-recall numbers; removed any wording that implies the 40% figure is paper-backed.
-2. `reconstruction/01_problem.md` + `03_failure_analysis.md` — the "error reinforcement" and "consolidation" phrasing re-anchored per verdict 3–4 above (kept as `[A]`/observed rather than P-attributed).
+2. `reconstruction/01_problem.md` + `failure_analysis.md` — the "error reinforcement" and "consolidation" phrasing re-anchored per verdict 3–4 above (kept as `[A]`/observed rather than P-attributed).
 
 ## R1 verdict
 
