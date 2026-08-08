@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import os
 import uuid
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Any
 
 import psycopg
 from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
 from pgvector.psycopg import register_vector
 
 _SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
@@ -31,11 +34,31 @@ class MemoryStore:
 
     def __init__(self, dsn: str | None = None):
         self.dsn = dsn or DEFAULT_DSN
+        self._persistent: psycopg.Connection | None = None
 
     def connect(self) -> psycopg.Connection:
+        """Fresh connection (caller closes it; `with conn:` closes on exit)."""
         conn = psycopg.connect(self.dsn, row_factory=dict_row)
         register_vector(conn)
         return conn
+
+    @contextmanager
+    def session(self) -> Iterator[psycopg.Connection]:
+        """Persistent connection: commits/rolls back but never closes.
+
+        EC-15: opening a fresh TCP+auth connection costs ~30 ms on localhost,
+        so hot paths reuse a single store-scoped connection.
+        """
+        conn = self._persistent
+        if conn is None or conn.closed:
+            conn = self._persistent = psycopg.connect(self.dsn, row_factory=dict_row)
+            register_vector(conn)
+        try:
+            yield conn
+            conn.commit()
+        except BaseException:
+            conn.rollback()
+            raise
 
     def apply_schema(self) -> str:
         """Idempotent DDL. Returns the pgvector extension version after applying."""
@@ -67,7 +90,8 @@ class MemoryStore:
     ) -> dict[str, Any]:
         """Insert a memory from Admission. Deterministic tenant partition from here on."""
         row_id = uuid.uuid4()
-        with self.connect() as conn:
+        sparse = Jsonb(sparse_terms) if sparse_terms is not None else None
+        with self.session() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
@@ -80,7 +104,7 @@ class MemoryStore:
                     """,
                     (
                         str(row_id), tenant_id, user_id, text, dense_embedding,
-                        sparse_terms, admission_op, provenance, confidence,
+                        sparse, admission_op, provenance, confidence,
                         pii_scan_result, pii_detector_version, importance_score,
                     ),
                 )
@@ -91,7 +115,7 @@ class MemoryStore:
         """Deterministic supersession (Week 1): close the validity window of the
         current row for the same entity — always scoped by tenant."""
         closed_at = self._now()
-        with self.connect() as conn:
+        with self.session() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
@@ -105,7 +129,7 @@ class MemoryStore:
 
     def delete(self, *, record_id: str, tenant_id: str) -> bool:
         """Physical purge — soft-delete flags are forbidden for privacy deletion (invariant 2)."""
-        with self.connect() as conn:
+        with self.session() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     "DELETE FROM memories WHERE id = %s AND tenant_id = %s RETURNING id",
@@ -127,7 +151,7 @@ class MemoryStore:
             params.append(user_id)
         sql += " ORDER BY valid_from DESC LIMIT %s"
         params.append(limit)
-        with self.connect() as conn:
+        with self.session() as conn:
             rows = conn.execute(sql, params).fetchall()
         return rows
 
@@ -148,7 +172,7 @@ class MemoryStore:
             params.append(user_id)
         sql += " ORDER BY cosine_dist ASC LIMIT %s"
         params.append(limit)
-        with self.connect() as conn:
+        with self.session() as conn:
             rows = conn.execute(sql, params).fetchall()
         return rows
 

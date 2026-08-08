@@ -2,3 +2,5 @@ psycopg[binary]==3.3.4
 SQLAlchemy==2.0.51
 pgvector==0.5.0
 pytest==9.1.1
+sentence-transformers==5.7.0
+torch==2.13.0

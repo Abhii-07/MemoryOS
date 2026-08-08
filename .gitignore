@@ -39,6 +39,9 @@ desktop.ini
 /tools/tmp/
 *.tmp
 
+# Local ML model cache (one-time download per ADR-007; not a repo artifact)
+.hf-cache/
+
 # Keep deliverable PDFs tracked (they are generated but final artifacts).
 # If you *must* ignore a specific generated PDF, list it here explicitly.
 

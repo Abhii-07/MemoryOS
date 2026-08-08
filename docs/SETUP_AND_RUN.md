@@ -1,7 +1,7 @@
 # Setup & Run Guide — MemoryOS
 
 > Written for a human with no AI agent. Copy-paste everything below.
-> Last updated: 2026-08-08 (G-M1 gate). Extends with G-M2/G-M3 commands as those gates land.
+> Last updated: 2026-08-08 (G-M2 gate). Extends with G-M3 commands as that gate lands.
 
 Everything in this repo is local: Postgres 17 + pgvector, a Python venv, and `pytest`
 gates. No admin rights, no Docker, no WSL, no cloud account, no AI needed.
@@ -113,8 +113,17 @@ py -3 -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # Sanity
-.venv\Scripts\python.exe -m pip list | findstr /i "psycopg pgvector pytest SQLAlchemy"
+.venv\Scripts\python.exe -m pip list | findstr /i "psycopg pgvector pytest SQLAlchemy torch"
 ```
+
+**First run downloads the embedding model** (ADR-007): the retrieval path uses a local
+`sentence-transformers` model (`all-MiniLM-L6-v2`, ~80 MB) stored in the repo's
+`.hf-cache/` folder. The first `pytest` or benchmark run downloads it automatically
+(one time, internet needed once). After that everything works offline.
+
+- If the model/cache is missing, the suite **skips** the dense tests and the system
+  degrades to BM25-only retrieval (no crash, no fake-dense). To re-download, delete
+  `.hf-cache/` and run any test.
 
 **Connection string** is read from the environment (never hardcoded in code):
 
@@ -134,11 +143,13 @@ $env:MEMORYOS_DB_DSN="postgresql://memoryos@localhost:5432/memoryos"
 .venv\Scripts\python.exe -m pytest tests/ -v
 ```
 
-Expected (G-M1):
+Expected (G-M2):
 
 ```
 tests\test_db.py .............                     [100%]
-12 passed in 2.19s
+tests\test_latency.py .                            [100%]
+tests\test_retrieval.py ..............             [100%]
+27 passed
 ```
 
 The DB schema is applied automatically by test fixtures (`apply_schema`, idempotent),
@@ -149,8 +160,28 @@ so no manual migration step.
 | Milestone | Command | Status |
 |---|---|---|
 | G-M1 Storage & tenant isolation | `.venv\Scripts\python.exe -m pytest tests/test_db.py -q` | PASS (12 tests) |
-| G-M2 Hybrid retrieval + RRF | `pytest tests/test_retrieval.py -q` | not yet shipped → docs updated when landed |
+| G-M2 Hybrid retrieval + RRF + EC-15 latency | `.venv\Scripts\python.exe -m pytest tests/test_retrieval.py tests/test_latency.py -q` | PASS (14 + 1) |
 | G-M3 Admission + context | `pytest tests/test_admission.py -q`, `pytest tests/test_context.py -q` | not yet shipped → docs updated when landed |
+
+### Latency benchmark (EC-15)
+
+The latency gate (`tests/test_latency.py`, marker `-m latency`) seeds 500 memorized
+rows and asserts p95 search time < 150 ms. Run it standalone:
+
+```powershell
+.venv\Scripts\python.exe -m pytest tests/test_latency.py -v
+```
+
+A finer-grained profiler with per-phase breakdown (embed / dense SQL / BM25 / fusion)
+is in the repo for manual tuning:
+
+```powershell
+$env:PYTHONPATH="src"; .venv\Scripts\python.exe -m bench.latency_profile --rows 500 --queries 30
+```
+
+> EC-15 note: measured p95 ≈ 20 ms on this machine (was ~206 ms before the
+> persistent-connection fix; a fresh TCP+auth connect costs ~30 ms on localhost and
+> the hot path reuses one store-scoped connection).
 
 ---
 
@@ -175,8 +206,8 @@ DELETE FROM memories WHERE id='<id>' AND tenant_id='acme' RETURNING id;   -- phy
 ```
 
 ⚠️ Manual inserts here persist in the DB; the pytest suite clears the table at every
-run (`clean_table` fixture), so re-running tests afterwards is always safe. This is
-a G-M1 (storage) manual check only. Watch for:
+run (`clean_table` fixture), so re-running tests afterwards is always safe. This
+covers the G-M1/G-M2 storage + retrieval manual checks. Watch for:
 
 | Symptom | Cause | Fix |
 
@@ -195,8 +226,13 @@ a G-M1 (storage) manual check only. Watch for:
 - `design/data_model.md` — the single `memories` table + index design (schema.sql is byte-matched)
 - `design/sprint_plan.md` — milestone map G-M1…G-M3
 - `src/memory_os/db/schema.sql` — DDL, idempotent
-- `src/memory_os/db/store.py` — `MemoryStore` (connect / apply_schema / add / supersede / delete / get_active / search_dense / index_names)
+- `src/memory_os/db/store.py` — `MemoryStore` (session / apply_schema / add / supersede / delete / get_active / search_dense / index_names)
+- `src/memory_os/embeddings/embedder.py` — local sentence-transformers model (ADR-007)
+- `src/memory_os/retrieval/` — tokenizer, BM25, RRF, hybrid fusion (relevance floor)
 - `tests/test_db.py` — 12 tests incl. tenant isolation, hard delete, HNSW rank, concurrency
-- `pytest.ini` — `testpaths=tests`, `pythonpath=src`
+- `tests/test_retrieval.py` — 14 tests (D3 regressions, EC-08/09/13/16, RRF/BM25 units)
+- `tests/test_latency.py` — EC-15 gate (`-m latency`, 500-row corpus, p95 < 150 ms)
+- `bench/latency_profile.py` — per-phase latency profiler
+- `pytest.ini` — `testpaths=tests`, `pythonpath=src`, `latency` marker
 
-*End of guide (G-M1). Later gates append their docs here.*
+*End of guide (G-M2). Later gates append their docs here.*
