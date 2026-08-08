@@ -1,11 +1,11 @@
 # CURRENT
-- active_loop: NONE
-- target: <milestone-id>
-- iteration: 0
-- last_gate: —
-- last_action: genesis spine adopted and re-sliced to pytest (merge 2026-08-08); no milestone started
-- next_action: wait for design stability (D4) — no BUILD loops until then
-- model: gemini-3.5-flash
+- active_loop: BUILD
+- target: G-M1 (Relational Schema & Tenant Isolation)
+- iteration: 1
+- last_gate: PASS — `pytest tests/test_db.py -q` → 12 passed (2.19s)
+- last_action: G-M1 build complete: schema.sql + store.py + tests/test_db.py written; gate green
+- next_action: commit G-M1; open G-M2 (hybrid retrieval & RRF) slice
+- model: deepseek-v4-flash-free
 - tokens_used: 0
 - tokens_budget: 50000
 - skills_loaded: []
