@@ -40,17 +40,17 @@ Store episodic and semantic memories in Postgres using pgvector for hybrid retri
 ## Milestones
 
 ### M1 — Relational Schema & Tenant Isolation
-- **Outcome:** Database tables (episodic, semantic, tenant metadata) initialized in SQLAlchemy (SQLite dev / Postgres+pgvector prod) with enforced tenant filtering.
+- **Outcome:** The `memories` table (single storage table per `design/data_model.md`; episodic/semantic abstracted as a `memory_type` column) initialized in SQLAlchemy on Postgres+pgvector with enforced tenant filtering. *(Harmonized 2026-08-08 with D4: the design defines ONE `memories` table — no separate episodic/semantic tables; see `design/sprint_plan.md`.)*
 - **Phase (swe-master):** Phase 1: System Architecture Design & Phase 3: Backend Engineering
 - **Files / freeze boundary:** `src/memory_os/db/**`, `tests/test_db.py`
 - **Demo command:** `pytest tests/test_db.py -q`
-- **Success criteria:** Tables migrate cleanly; queries for tenant A never return tenant B's rows; DELETE actions physically purge rows from the store; `valid_until` column present and nullable.
+- **Success criteria:** Tables migrate cleanly on the local Postgres 17 + pgvector instance; queries for tenant A never return tenant B's rows; DELETE actions physically purge rows from the store; `valid_until` column present and nullable; HNSW index (`dense_embedding vector(384)` per ADR-007) created.
 - **Loops:** L1, L4
 - **Skills:** canon + tdd + data-systems-engineering, modular-architecture
 - **Token budget:** 50000
 
 ### M2 — Hybrid Retrieval & RRF Fusion
-- **Outcome:** Retrieval engine fusing BM25 (tf-idf fallback in offline dev) sparse results with vector dense results using Reciprocal Rank Fusion (RRF); deterministic latency well under invariant.
+- **Outcome:** Retrieval engine fusing BM25 sparse results (via `sparse_terms`) with vector dense results (via `dense_embedding` from the ADR-007 local embedder) using Reciprocal Rank Fusion (RRF, k=60); deterministic latency well under invariant.
 - **Phase (swe-master):** Phase 6: Memory Architecture
 - **Files:** `src/memory_os/retrieval/**`; `src/memory_os/embeddings/**`; `tests/test_retrieval.py`
 - **Skills:** canon + tdd + data-systems-engineering

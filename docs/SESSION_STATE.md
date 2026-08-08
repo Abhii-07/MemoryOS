@@ -3,9 +3,9 @@
 > Canonical, machine-readable/human-readable state of this project. **The repository is the source of truth, not chat context.** If any file contradicts this one, SESSION_STATE.md wins (and the contradiction must be fixed).
 
 ## Last Updated
-- Date/time: 2026-08-08 14:15 (local)
+- Date/time: 2026-08-08 (late session)
 - Current git branch: `main`
-- Current commit SHA: `2823f40` (`feat(d1): merged reconstruction`)
+- Current commit SHA: `2de6fa8` (`docs(merge): final journal + end-of-merge checks`) — D4 (Phase 8) commiting next
 
 ## Project
 - Project name: **MemoryOS** (course deliverable: *Conversational Memory Intelligence System*)
@@ -28,12 +28,17 @@
 |---|---|---|---|---|---|
 | 0 | Bootstrap + continuity | [x] COMPLETE | `docs(continuity)` (7bd37ca) | dirs, git init, docs/ + CURRENT + PLAN + AGENTS + README + .gitignore; tools/build_pdfs.py | — |
 | 1 | D1 merged reconstruction | [x] COMPLETE | `feat(d1)` (2823f40) | `reconstruction/*.md` (5), 2 PDFs (6p/4p), merged OQ9 + stage→req map | — |
-| 2 | D2 research copy + catalog | [ ] NOT STARTED | — | `research/**` (verbatim), catalog, README | Copy; write; commit |
-| 3 | D3 baseline run | [ ] NOT STARTED | — | venv, baseline artifacts, reports, PDF | Run, write, commit |
-| 4 | D5 Genesis spine | [ ] NOT STARTED | — | `.genesis/**`, invariants ×5 | Adopt, re-slice, commit |
-| 5 | Product PRD + edge cases | [ ] NOT STARTED | — | PRD.md, edge_cases.md | Write, commit |
-| 6 | Research passes R1/R2/R3 | [ ] NOT STARTED | — | dated addenda | Verify, commit |
-| 7 | Journal merge + gates | [ ] NOT STARTED | — | journal/merge.md, verification | Commit |
+| 2 | D2 research copy + catalog | [x] COMPLETE | `feat(d2)` (5f9677e) | `research/**` (verbatim, 18 files hash-verified), catalog, README | — |
+| 3 | D3 baseline run | [x] COMPLETE | `feat(d3)` (1ff47a5) | venv, baseline artifacts, reports, productive_failure PDF (3p) | — |
+| 4 | Genesis spine | [x] COMPLETE | `chore(genesis)` (aaf37f0) | `.genesis/**`, invariants ×5, pytest re-slice | — |
+| 5 | Product PRD + edge cases | [x] COMPLETE | `docs(product)` (ed7ac56) | PRD.md, edge_cases.md (EC-01…18) | — |
+| 6 | Research passes R1/R2/R3 | [x] COMPLETE | `docs(research)` (39612c9) | datestamped addenda in `research/passes/` | — |
+| 7 | Journal merge + gates | [x] COMPLETE | `docs(merge)` (2de6fa8) | journal/2026-08-08-merge.md, verified checklist | — |
+| 8 | D4 system design + sprint plan | [ ] DONE — commit pending | `docs(d4)` (next) | `design/` (15 files verbatim + ADR-007 + sprint_plan.md), fixes per R3 | Commit; then POST-REVIEW — no Genesis M1 start until user approves |
+
+## Post-merge sequence (design step ahead)
+- Genesis M1–M2–M3 build loops use `pytest` commands; D6 build = the actual `src/memory_os` implementation. M4–M5 (lifecycle, obs) as follow-up slices per `design/sprint_plan.md`.
+- Environment pre-flight for M1: install PostgreSQL 17 + pgvector locally, create `memoryos` DB, `.venv` + psycopg/sqlalchemy/pgvector + sentence-transformers (ADR-007).
 
 ## Completed Work
 (Verified — do NOT redo.)
@@ -72,8 +77,12 @@ ABBREVIATED — see `docs/DECISIONS.md` for full (Decision/Reason/Alternatives/C
 - D-005 D1 rigor = new-repo D1 + grafted old evidence; markdown is source truth; PDFs regenerate from markdown
 - D-006 D2 research copied verbatim + `sources_catalog.md` hardening
 - D-007 D3 naive baseline run for real (was never run); environment-jitter mitigation via min-of-5 latency samples
-- D-008 D5 genesis spine adopted from old repo; milestones re-sliced to pytest/Python; invariants ×5 (3 old + 2 new: token-budget per turn, PII pre/post guardrail)
+- D-008 D5 genesis spine adopted from old repo; milestones re-sliced to pytest/Python; invariants ×5 (3 old + 2 new: token budget per turn, PII pre/post guardrail)
 - D-009 Product layer = `product/PRD.md` + `design/edge_cases.md`
+- D-010 Local env conventions (Python 3.14 for PDFs, .venv for baseline)
+- D-011..D-014 Merge discipline (evidence tagging, dated passes, per-phase commits, AI disclosure — journal/2026-08-08-merge.md)
+- D-015 D4 adopted from old repo + fixes (sprint_plan.md added, ASI06→LLM-04/08, ADR-007)
+- D-016 Prod-consistent storage: Postgres+pgvector only (no SQLite branch)
 
 ## Constraints
 1. Old repo `D:\Abhii\Projects\Conversational-Memory-Intelligence-System-` is READ-ONLY forever — copy/read only, never write/edit.
@@ -123,24 +132,25 @@ To hold ALL implementation (check in Phase 4/5 gate):
 ## Commands
 - Checkpoint/status: `git -C D:\Abhii\Projects\MemoryOS status` / `git -C … log --oneline` / `git -C … rev-parse HEAD`
 - Chrome PDF: `& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu --no-pdf-header-footer --print-to-pdf="out.pdf" "file:///…html"`
-- Python PDF build (after Phase 0): `& "C:\Users\CR7\AppData\Local\Python\pythoncore-3.14-64\python.exe" tools/build_pdfs.py`
-- Phase 3 venv: `& python3.14 -m venv .venv` then `.venv\Scripts\pip install scikit-learn numpy`
-- Git Bash (for genesis tooling): `& "C:\Program Files\Git\bin\bash.exe" -lc "bash tools/scaffold.sh …"`
+- Python PDF build: `& "C:\Users\CR7\AppData\Local\Python\pythoncore-3.14-64\python.exe" tools/build_pdfs.py`
+- Baseline venv: `& python3.14 -m venv .venv` then `.venv\Scripts\pip install scikit-learn numpy`
+- Git Bash (genesis tooling): `& "C:\Program Files\Git\bin\bash.exe" -lc "bash tools/scaffold.sh …"`
+- M1 pre-flight (Postgres): install PostgreSQL 17 + pgvector, `psql -U postgres -c "CREATE DATABASE memoryos;"`; record connection string here (never in code)
 
 ## Test Status
-- None run yet (no code). Planned: pytest suite for baseline + memory ops (Phase 3/4); PDF HTML->PDF smoke via headers/footer check.
+- No implementation code yet — repository is design-complete (D1–D4 docs). Planned suite: `pytest tests/test_db.py` (G-M1), `tests/test_retrieval.py` (G-M2), `tests/test_admission.py` + `tests/test_context.py` (G-M3), plus PDF smoke via build_pdfs.
 
 ## Research Status
 - Sources checked (old repo + handbook): weeks 1–4 landscape, RRF/BLER, naive TF-IDF+cosine, PII benchmark notes.
-- Claims VERIFIED: tool-chain works, no mojibake, Chrome path OK. **Phase 6 passes DONE (2026-08-08): R1** citations/claims (11/11 papers verified; 2 claim edits — "~40% dense-fail" NOT in RAG paper: practitioner-origin; Generative Agents terms corrected to reflection/summarization); **R2** D4-readiness (LoCoMo ACL-2024 + SOTA numbers, Mem0 graph + expiration_date, Letta v0.16.8, Zep/Graphiti bi-temporal, RRF k=60 with 91%@10 corrected to Supermemory practitioner blog, pgvector HNSW: 10–60ms @ 1M–10M vec, MIRIX = memory-system paper not a benchmark); **R3** product (name corrected: Supermemory; OWASP LLM Top 10 2025 = LLM01–LLM10, no ASI06 — cite LLM04/LLM08).
-- Unverified items remaining: PIIBench 0.96→0.18 OOD figure (flagged in catalog for D4-era verification).
-- Conclusions (preliminary): memories = retrieved + injected + consolidated; retrieval = hybrid dense+sparse+RRF; naive gap demonstrated by baseline (falsification recorded).
+- Claims VERIFIED: tool-chain works, no mojibake, Chrome path OK. **Phase 6 passes DONE (2026-08-08): R1** citations/claims (11/11 papers verified; 2 claim edits — "~40% dense-fail" NOT in RAG paper: practitioner-origin; Generative Agents terms corrected to reflection/summarization); **R2** D4-readiness (LoCoMo ACL-2024 + SOTA numbers, Mem0 graph + expiration, Letta v0.16.8, Zep/Graphiti bi-temporal, RRF k=60 with 91%@10 corrected to Supermemory practitioner blog, pgvector HNSW 10–60ms @ 1M–10M vec, MIRIX = memory-system paper not a benchmark); **R3** product (name corrected: Supermemory; OWASP LLM Top 10 2025 = LLM01–LLM10, no ASI06 — cite LLM04/LLM08; **applied to D4 threat_model.md + ADR-004 during D4 phase**).
+- Unverified items remaining: PIIBench 0.96→0.18 OOD figure (flagged in catalog for D6-era verification).
+- Conclusions: memories = admission + retention + ranking + life cycle; retrieval = hybrid dense+sparse+RRF; naive gap demonstrated by baseline (falsification recorded).
 
 ## Git State
 - branch: main
-- latest commit: `39612c9` (Phase 6 `docs(research): verification passes R1-R3`)
-- uncommitted: Phase 7 in progress → journal/merge.md + rerun baseline results → commit now
-- what to commit next: Phase 7 (`docs(merge): final journal + checklist`) as commit #8
+- latest commit: `39612c9` (Phase 6 `docs(research): verification passes R1-R3`), then `2de6fa8` (Phase 7 `docs(merge): final journal + end-of-merge checks`)
+- uncommitted: Phase 8 (D4) in progress → design copy + fixes + sprint_plan + ADR-007
+- what to commit next: D4 (`docs(d4): system design + sprint plan`) as commit #9
 
 ## Resume Instructions
 To resume this project:

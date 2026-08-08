@@ -204,3 +204,40 @@ Create `product/PRD.md` (vision, personas, R1–R8 as capabilities, competitive 
 
 ### Consequences
 - D4 design derives directly from PRD surfaces; edge-case ledger = quality gate for D6.
+
+---
+
+## D-015 — D4: adopt old-repo design + local embeddings
+
+Date: 2026-08-08
+Status: ACCEPTED
+
+### Context
+User provided a near-complete D4 in the old repo (`design/`, authored with an external LLM): three-part system design (sections 1–16), data model, API contracts, threat model, 6 ADRs, and 3 rendered PDFs (system_design 15p, architecture 4p, data_flow 4p). Handbook artifact `sprint_plan.md` was missing everywhere — not only in the old repo. Verification pass R3 (2026-08-08) also proved the old draft's "OWASP 2026 ASI06" citation is wrong (no such taxonomy slot; memory risk = LLM-04/LLM-08).
+
+### Decision
+- Copy the old D4 set **verbatim** into `MemoryOS/design/` (byte-identical, hash-verified) + `design_records/` (15 files).
+- Rework only what MemoryOS needs: (1) create `design/sprint_plan.md` mapping D4 §15 M1–M7 onto Genesis M1–M3; (2) fix the ASI06→LLM-04/LLM-08 citations in `threat_model.md` + ADR-004 (per R3); (3) add ADR-007 (local deterministic embeddings, 384-d) and dimension note to `data_model.md` (prod-consistent, no external service); (4) harmonize Genesis M1 schema language with the single `memories` table.
+- Stack: **Postgres+pgvector only** (no SQLite dev branch) per user's prod-consistency decision.
+
+### Alternatives
+- Re-draft D4 from scratch (waste of reviewed work); copy and reuse with evidence (chosen).
+
+### Consequences
+- D4 = single committed artifact set in MemoryOS; PDFs remain byte-identical originals (authored evidence), MD sources adapted + documented; Genesis M1–M3 re-sliced consistently with the design.
+
+---
+
+## D-016 — Prod-consistent storage: Postgres+pgvector only
+
+Date: 2026-08-08
+Status: ACCEPTED
+
+### Context
+User: "Do what we will be doing in PROD, keep consistency all over." Approach B (PG + pgvector) is the chosen architecture (`.genesis/PLAN.md`). Old plan mentioned "SQLite dev / Postgres prod" — rejected for consistency.
+
+### Decision
+Postgres 17 + pgvector are the **only** storage stack across dev, test, and prod; no SQLite branch anywhere in the codebase. Install + local `memoryos` database is part of G-M1 pre-flight (before first test run).
+
+### Consequences
+- No environment drift; invariants (tenant isolation, latency <150ms) measured against the real engine; `sprint_plan.md` G-M1 loads pgvector into the CI-equivalent run.
