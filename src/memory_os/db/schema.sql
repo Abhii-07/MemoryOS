@@ -69,3 +69,17 @@ CREATE INDEX IF NOT EXISTS idx_memories_lineage
 CREATE INDEX IF NOT EXISTS idx_memories_lifecycle_scan
     ON memories (status, provenance, importance_score, valid_from)
     WHERE status = 'active';
+
+-- Deletion-propagation jobs (api_contracts Endpoint 3: the 202 Accepted path).
+-- A large lineage cascade is persisted here as 'pending' and completed by a
+-- later deterministic run; the API never converts an async cascade into a
+-- false-positive immediate success.
+CREATE TABLE IF NOT EXISTS propagation_jobs (
+    job_id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id      TEXT NOT NULL,
+    deleted_id     UUID NOT NULL,
+    state          TEXT NOT NULL DEFAULT 'pending'
+                   CHECK (state IN ('pending', 'completed')),
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    completed_at   TIMESTAMPTZ
+);

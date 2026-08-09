@@ -87,10 +87,13 @@ class MemoryStore:
         dense_embedding: list[float] | None = None,
         sparse_terms: dict[str, Any] | None = None,
         importance_score: float | None = None,
+        status: str = "active",
+        consolidation_lineage: list[str] | None = None,
     ) -> dict[str, Any]:
         """Insert a memory from Admission. Deterministic tenant partition from here on."""
         row_id = uuid.uuid4()
         sparse = Jsonb(sparse_terms) if sparse_terms is not None else None
+        lineage = consolidation_lineage or None
         with self.session() as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -98,14 +101,16 @@ class MemoryStore:
                     INSERT INTO memories (
                       id, tenant_id, user_id, text, dense_embedding, sparse_terms,
                       admission_op, provenance, confidence, pii_scan_result,
-                      pii_detector_version, importance_score
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                      pii_detector_version, importance_score, status,
+                      consolidation_lineage
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id, created_at
                     """,
                     (
                         str(row_id), tenant_id, user_id, text, dense_embedding,
                         sparse, admission_op, provenance, confidence,
                         pii_scan_result, pii_detector_version, importance_score,
+                        status, lineage,
                     ),
                 )
                 row = cur.fetchone()
@@ -185,3 +190,71 @@ class MemoryStore:
                 """
             ).fetchall()
         return [r["indexname"] for r in rows]
+
+    # ─── Lifecycle + lineage (G-M4: four-lever framework, ADR-005) ───────────
+
+    def set_status(self, *, record_id: str, tenant_id: str, status: str) -> bool:
+        """Set the lifecycle status of one row (decay → 'decayed', merge
+        sources → 'merged'). Tenant-scoped like every other surface."""
+        with self.session() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE memories SET status = %s "
+                    " WHERE id = %s AND tenant_id = %s",
+                    (status, record_id, tenant_id),
+                )
+                return cur.rowcount > 0
+
+    def mark_merged(self, *, record_id: str, tenant_id: str) -> bool:
+        """'merged' keeps lineage integrity: the source stays in the table."""
+        return self.set_status(record_id=record_id, tenant_id=tenant_id, status="merged")
+
+    def get_derived(self, *, tenant_id: str, source_id: str) -> list[dict[str, Any]]:
+        """All rows whose consolidation_lineage contains `source_id` (GIN walk,
+        tenant-scoped). Deterministic ordering by id for reproducible cascades."""
+        with self.session() as conn:
+            rows = conn.execute(
+                """
+                SELECT id, tenant_id, user_id, text, consolidation_lineage,
+                       provenance, confidence, pii_scan_result, importance_score
+                  FROM memories
+                 WHERE tenant_id = %s
+                   AND consolidation_lineage && ARRAY[%s]::uuid[]
+                 ORDER BY id
+                """,
+                (tenant_id, source_id),
+            ).fetchall()
+        return rows
+
+    def create_propagation_job(self, *, tenant_id: str, deleted_id: str) -> str:
+        """Persist an async deletion cascade (api_contracts 202 Accepted path)."""
+        with self.session() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO propagation_jobs (tenant_id, deleted_id)
+                    VALUES (%s, %s) RETURNING job_id
+                    """,
+                    (tenant_id, deleted_id),
+                )
+                row = cur.fetchone()
+        return str(row["job_id"])
+
+    def complete_propagation_job(self, *, job_id: str) -> bool:
+        with self.session() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE propagation_jobs SET state = 'completed', completed_at = now() "
+                    " WHERE job_id = %s AND state = 'pending'",
+                    (job_id,),
+                )
+                return cur.rowcount > 0
+
+    def get_propagation_job(self, *, job_id: str) -> dict[str, Any] | None:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT job_id, tenant_id, deleted_id, state, created_at, completed_at "
+                " FROM propagation_jobs WHERE job_id = %s",
+                (job_id,),
+            ).fetchone()
+        return row

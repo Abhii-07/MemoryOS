@@ -1,7 +1,7 @@
 # Setup & Run Guide — MemoryOS
 
 > Written for a human with no AI agent. Copy-paste everything below.
-> Last updated: 2026-08-09 (G-M3 gate). Extends with G-M4+ as those gates land.
+> Last updated: 2026-08-09 (G-M4 gate). Extends with G-M5+ as those gates land.
 
 Everything in this repo is local: Postgres 17 + pgvector, a Python venv, and `pytest`
 gates. No admin rights, no Docker, no WSL, no cloud account, no AI needed.
@@ -143,15 +143,16 @@ $env:MEMORYOS_DB_DSN="postgresql://memoryos@localhost:5432/memoryos"
 .venv\Scripts\python.exe -m pytest tests/ -v
 ```
 
-Expected (G-M3):
+Expected (G-M4):
 
 ```
 tests\test_admission.py ............................     [100%]
 tests\test_context.py ...............................     [100%]
 tests\test_db.py .............                     [100%]
 tests\test_latency.py .                            [100%]
+tests\test_lifecycle.py ................           [100%]
 tests\test_retrieval.py ..............             [100%]
-54 passed
+70 passed
 ```
 
 The DB schema is applied automatically by test fixtures (`apply_schema`, idempotent),
@@ -168,6 +169,7 @@ so no manual migration step.
 | G-M1 Storage & tenant isolation | `.venv\Scripts\python.exe -m pytest tests/test_db.py -q` | PASS (12 tests) |
 | G-M2 Hybrid retrieval + RRF + EC-15 latency | `.venv\Scripts\python.exe -m pytest tests/test_retrieval.py tests/test_latency.py -q` | PASS (14 + 1) |
 | G-M3 Admission + context | `.venv\Scripts\python.exe -m pytest tests/test_admission.py tests/test_context.py -q` | PASS (24 + 3) |
+| G-M4 Lifecycle + deletion propagation | `.venv\Scripts\python.exe -m pytest tests/test_lifecycle.py -q` | PASS (16 tests) |
 
 ### Latency benchmark (EC-15)
 
@@ -247,6 +249,15 @@ covers the G-M1/G-M2 storage + retrieval manual checks. Watch for:
 - `design/decision_records/ADR-008-entity-slot-linking.md` — the deterministic
   slot grammar `admission/patterns.py` implements (rule order matters: specific
   slots like deadline/meeting are checked before the generic `is on X` tool rule)
+- `design/decision_records/ADR-005-deletion-propagation-lineage.md` — the
+  `consolidation_lineage` mechanism `lifecycle/manager.py` implements
+- `src/memory_os/lifecycle/manager.py` — four-lever lifecycle: merge
+  (`consolidate`), soft decay (`decay`), eviction + lineage walk (`evict`),
+  async 202 jobs (`run_propagation_job`); `propagation_jobs` table
+- `tests/test_lifecycle.py` — 16 tests incl. the merge-then-delete "leak via
+  summary" gate (EC-04, Threat-4), multi-level lineage rebuild (ADR-005's
+  hardest case), depth-cap eviction policy, decay soft-deletion, 202-shaped
+  cascade semantics, cross-tenant propagation isolation
 
 ### The write path (G-M3 admission)
 
@@ -269,4 +280,26 @@ that doesn't fit is dropped entirely, never overflowed into another zone
 system_prompt/history/input 10%, tool_output 5%; explicit `zone_budgets` carve
 out of the *remaining* budget (sum ≤ `token_budget` enforced).
 
-*End of guide (G-M3). Later gates append their docs here.*
+### The lifecycle (G-M4 four-lever + lineage)
+
+`LifecycleManager` (`src/memory_os/lifecycle/manager.py`) implements Week 1's
+four levers over the `memories` table:
+
+- **Merge** — `consolidate()` folds related raw memories into one summary
+  record (provenance `assistant_generated`) whose `consolidation_lineage`
+  points at the sources; sources are kept with `status='merged'` for lineage
+  integrity but are no longer retrievable.
+- **Decay** — soft: `decay()` sets `status='decayed'` (row survives; every
+  retrieval surface already excludes it). `decay_candidates()` finds
+  low-importance rows older than a cutoff (importance decided at admission).
+- **Eviction** — `evict()` physically purges the record **and walks
+  `consolidation_lineage`**: every derived summary is rebuilt from its
+  surviving members (deterministically, ascending lineage depth) or evicted
+  when nothing survives. This closes the EC-04 "leak via summary" and
+  ADR-005's multi-level (summary-of-summary) case. Depth beyond
+  `max_lineage_depth` (4) is evicted rather than rebuilt.
+- **202 semantics** — cascades larger than `max_sync_derived` persist a
+  `propagation_jobs` row and return `in_progress` + `check_url`; the deferred
+  job runs via `run_propagation_job` (idempotent).
+
+*End of guide (G-M4). Later gates append their docs here.*
