@@ -53,9 +53,19 @@ class AdmissionResult:
 class Admitter:
     """Classifies one conversation turn and persists the storage outcome."""
 
-    def __init__(self, store: MemoryStore, *, scan_limit: int = 200):
+    def __init__(self, store: MemoryStore, *, scan_limit: int = 200, tracer=None):
         self.store = store
         self.scan_limit = scan_limit
+        self._tracer = tracer
+
+    def _span_context(self, *, tenant_id: str, user_id: str):
+        """Optional instrumentation (G-M5): a typed 'admission' span; memory
+        content only ever lands in span events, which the collector redacts."""
+        if self._tracer is None:
+            return None
+        return self._tracer.begin(name="admission", kind="admission",
+                                  attributes={"tenant_id": tenant_id,
+                                              "user_id": user_id})
 
     # ── helpers ──────────────────────────────────────────────────────────────
     def _embed(self, texts: list[str]) -> list[float] | None:
@@ -103,7 +113,18 @@ class Admitter:
     ) -> AdmissionResult:
         """Classify + persist one turn (api_contract POST /memory/turns)."""
         provenance = PROVENANCE_BY_TURN_TYPE.get(turn_type, "user_stated")
+        span = self._span_context(tenant_id=tenant_id, user_id=user_id)
+        try:
+            return self._admit(tenant_id=tenant_id, user_id=user_id, text=text,
+                               provenance=provenance)
+        finally:
+            if span is not None:
+                self._tracer.end(span, events=[{"name": "turn_content",
+                                                "content": text[:200]}])
 
+    def _admit(self, *, tenant_id: str, user_id: str, text: str,
+              provenance: str) -> AdmissionResult:
+        """Classify + persist one turn (api_contract POST /memory/turns)."""
         # 1) PII pre-guardrail — redact secrets BEFORE persistence
         scrubbed, hits = scrub_pii(text)
         pii_result = "redacted" if hits else "pass"

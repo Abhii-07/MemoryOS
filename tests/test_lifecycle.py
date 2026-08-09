@@ -152,7 +152,7 @@ class TestLeakViaSummary:
                 "SELECT text, consolidation_lineage FROM memories WHERE id = %s",
                 (sum_id,),
             ).fetchone()
-        assert "taco" not in after["text"]          # EC-004: no leak via summary
+        assert "taco" not in after["text"]          # EC-04: no leak via summary
         assert "server maintenance" in after["text"]
         assert set(str(x) for x in after["consolidation_lineage"]) == {b}
         assert after["text"].startswith(SUMMARY_PREFIX % 1)

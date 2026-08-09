@@ -1,7 +1,7 @@
 # Setup & Run Guide — MemoryOS
 
 > Written for a human with no AI agent. Copy-paste everything below.
-> Last updated: 2026-08-09 (G-M4 gate). Extends with G-M5+ as those gates land.
+> Last updated: 2026-08-09 (G-M5 gate). Later gates append their docs here.
 
 Everything in this repo is local: Postgres 17 + pgvector, a Python venv, and `pytest`
 gates. No admin rights, no Docker, no WSL, no cloud account, no AI needed.
@@ -143,7 +143,7 @@ $env:MEMORYOS_DB_DSN="postgresql://memoryos@localhost:5432/memoryos"
 .venv\Scripts\python.exe -m pytest tests/ -v
 ```
 
-Expected (G-M4):
+Expected (G-M5):
 
 ```
 tests\test_admission.py ............................     [100%]
@@ -151,8 +151,9 @@ tests\test_context.py ...............................     [100%]
 tests\test_db.py .............                     [100%]
 tests\test_latency.py .                            [100%]
 tests\test_lifecycle.py ................           [100%]
+tests\test_observability.py ..................     [100%]
 tests\test_retrieval.py ..............             [100%]
-70 passed
+88 passed
 ```
 
 The DB schema is applied automatically by test fixtures (`apply_schema`, idempotent),
@@ -170,6 +171,7 @@ so no manual migration step.
 | G-M2 Hybrid retrieval + RRF + EC-15 latency | `.venv\Scripts\python.exe -m pytest tests/test_retrieval.py tests/test_latency.py -q` | PASS (14 + 1) |
 | G-M3 Admission + context | `.venv\Scripts\python.exe -m pytest tests/test_admission.py tests/test_context.py -q` | PASS (24 + 3) |
 | G-M4 Lifecycle + deletion propagation | `.venv\Scripts\python.exe -m pytest tests/test_lifecycle.py -q` | PASS (16 tests) |
+| G-M5 Observability + audit gate | `.venv\Scripts\python.exe -m pytest tests/test_observability.py -q` | PASS (18 tests) |
 
 ### Latency benchmark (EC-15)
 
@@ -302,4 +304,36 @@ four levers over the `memories` table:
   `propagation_jobs` row and return `in_progress` + `check_url`; the deferred
   job runs via `run_propagation_job` (idempotent).
 
-*End of guide (G-M4). Later gates append their docs here.*
+### Observability + audit gate (G-M5)
+
+`memory_os/observability` (`src/memory_os/observability/tracer.py`) adds typed
+trace spans to the hot components, and `memory_os/audit` makes safety a
+checked fact of the repository:
+
+- **Spans** — `MemoryTracer.begin/end` opens/ends typed spans (kinds:
+  `admission`, `ranking_decision`, `retrieval`, `supersession`, `decay`,
+  `eviction`, `consolidation`, `context_build` — system_design_part3 §12).
+  Components opt in via a `tracer=` constructor arg; default is a no-op.
+  Memory *content* may appear only in span *events*, never in attributes.
+- **RedactingCollector** — at export, attribute values whose keys are
+  sensitive (`query`, `text`, `content`, `memory`, `payload`, `value`) are
+  replaced by `sha256:` hashes; event content is run through the *same* PII
+  scrub the write path uses, and each event carries a `redacted: true|false`
+  flag. Redaction is deterministic and independent of the write path
+  (threat_model Threat 5).
+- **Audit gate** — `MemoryStore` + `audit/policy.toml` +
+  `memory_os/audit/checker.py`: a config-as-code gate verifying, on every
+  run, that: no LLM imports exist in the service; PII scrub precedes
+  `store.add`; no raw `psycopg.connect` outside `db/`; no soft-delete writes
+  in the service; collector redaction is enabled in policy; every typed
+  span kind exists; every EC-XX in the ledger (18) is exercised by a test; and
+  the live DB carries the expected CHECK constraints, GIN lineage index, and
+  `propagation_jobs` table. A misconfigured deployment **fails the gate**
+  rather than shipping unredacted spans.
+
+```powershell
+# audit gate standalone
+$env:PYTHONPATH="src"; .venv\Scripts\python.exe -c "from memory_os.audit.checker import AuditChecker; r=AuditChecker().audit(); print('PASS' if r.passed else 'FAIL'); [print(f'  [{\"ok\" if x.passed else \"FAIL\"}] {x.rule}: {x.detail}') for x in r.results]"
+```
+
+*End of guide (G-M5). Later gates append their docs here.*

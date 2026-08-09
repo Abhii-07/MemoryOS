@@ -35,6 +35,17 @@ PARAPHRASE_COSINE = 0.75
 DENSE_TOP_N = 20
 SPARSE_TOP_N = 20
 
+# Provenance-weighted trust factor (system_design_part2 §9 final ordering;
+# threat_model Threat-2 mitigation): content that entered via a channel an
+# attacker controls is structurally disadvantaged in ranking, never on equal
+# footing with something the user said directly.
+PROVENANCE_WEIGHTS: dict[str, float] = {
+    "user_stated": 1.0,
+    "assistant_generated": 0.85,
+    "tool_derived": 0.6,
+    "retrieved_document": 0.5,
+}
+
 
 class NoRelevantMemory(Exception):
     """Explicit 'nothing relevant found' — a valid, expected outcome."""
@@ -52,6 +63,8 @@ class HybridRetriever:
         paraphrase_cosine: float = PARAPHRASE_COSINE,
         dense_top_n: int = DENSE_TOP_N,
         sparse_top_n: int = SPARSE_TOP_N,
+        provenance_weights: dict[str, float] | None = None,
+        tracer=None,
     ):
         self.store = store
         self.floor = floor
@@ -59,7 +72,9 @@ class HybridRetriever:
         self.paraphrase_cosine = paraphrase_cosine
         self.dense_top_n = dense_top_n
         self.sparse_top_n = sparse_top_n
+        self.provenance_weights = provenance_weights or dict(PROVENANCE_WEIGHTS)
         self._dense_available = is_available()
+        self._tracer = tracer
 
     @property
     def dense_available(self) -> bool:
@@ -73,6 +88,21 @@ class HybridRetriever:
         WHERE tenant_id = %s matched, and BM25 corpus stats (df, avg-dl) are
         computed over that same pre-filtered set.
         """
+        span = None
+        if self._tracer is not None:
+            span = self._tracer.begin(name="retrieval", kind="retrieval",
+                                      attributes={"tenant_id": tenant_id})
+        try:
+            return self._search_impl(tenant_id=tenant_id, query=query,
+                                     limit=limit, user_id=user_id)
+        finally:
+            if span is not None:
+                self._tracer.end(span, events=[{"name": "query_content",
+                                                "content": query[:200]}])
+
+    def _search_impl(self, *, tenant_id: str, query: str, limit: int,
+                     user_id: str | None) -> list[dict[str, Any]]:
+        """Core search: tenant pre-filter, BM25 + dense, RRF fusion, floor."""
         q_tokens = tokenize(query)
         q_numbers = numeric_tokens(query)
         if not q_tokens and not q_numbers:
@@ -103,8 +133,19 @@ class HybridRetriever:
         fused = rrf.fuse([dense_ids, sparse_ids])
         dense_by_id = {r["id"]: r for r in dense_rows}
 
+        # Provenance-weighted final ordering (Threat-2 mitigation): the fused
+        # score is multiplied by the channel's trust weight so a poisoned
+        # tool_derived / retrieved_document row starts structurally lower
+        # than the same content the user stated directly.
+        picks: list[tuple[float, str]] = []
+        for record_id, f_score in fused.items():
+            provenance = (dense_by_id.get(record_id) or sparse_rows[record_id])["provenance"]
+            effective = f_score * self.provenance_weights.get(provenance, 1.0)
+            picks.append((effective, record_id, provenance))
+        picks.sort(key=lambda t: t[0], reverse=True)
+
         results: list[dict[str, Any]] = []
-        for record_id, f_score in sorted(fused.items(), key=lambda kv: kv[1], reverse=True):
+        for effective, record_id, provenance in picks:
             dense_row = dense_by_id.get(record_id)
             cosine_sim = 1.0 - float(dense_row["cosine_dist"]) if dense_row else None
             if not self._passes_floor(record_id, cosine_sim, q_tokens, q_numbers,
@@ -113,9 +154,10 @@ class HybridRetriever:
             row = {
                 "id": record_id,
                 "text": (dense_row or sparse_rows[record_id])["text"],
-                "provenance": (dense_row or sparse_rows[record_id])["provenance"],
+                "provenance": provenance,
                 "confidence": (dense_row or sparse_rows[record_id])["confidence"],
-                "fused_score": f_score,
+                "fused_score": fused[record_id],
+                "effective_score": effective,
             }
             if cosine_sim is not None:
                 row["cosine_sim"] = cosine_sim

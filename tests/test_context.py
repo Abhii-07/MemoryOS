@@ -1,9 +1,9 @@
 """G-M3 gate: `pytest tests/test_context.py -q`.
 
 Sprint-plan success criteria (G-M3, context part):
-  - per-zone budgets: ceilings never exceeded               [EC-010]
+  - per-zone budgets: ceilings never exceeded               [EC-10]
   - D3 c3 long-conversation stress (40-token budget) — the buried correct
-    fact always survives                                     [EC-010 / D3 c3]
+    fact always survives                                     [EC-10 / D3 c3]
   - sum-of-zones <= token_budget enforced (api_contracts -> 400)
   - no_relevant_memory shape is first-class, not an error
   - retrieval order is the injection order (final-ranked order per part2 §9.2)
@@ -120,7 +120,7 @@ class TestC3Stress40:
 
 class TestZoneCeilings:
     def test_zone_ceiling_not_exceeded_hard(self, store):
-        """EC-010: a huge first memory must not blow the zone; oversize
+        """EC-10: a huge first memory must not blow the zone; oversize
         candidates are dropped entirely."""
         ctx = build_context(
             memories=[{"text": "word " + " ".join(["x"] * 30)},  # est ~40 tokens

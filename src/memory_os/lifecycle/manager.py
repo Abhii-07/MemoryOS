@@ -98,11 +98,13 @@ class LifecycleManager:
         max_lineage_depth: int = MAX_LINEAGE_DEPTH,
         max_sync_derived: int = MAX_SYNC_DERIVED,
         min_importance: float = DECAY_DEFAULT_MIN_IMPORTANCE,
+        tracer=None,
     ):
         self.store = store
         self.max_lineage_depth = max_lineage_depth
         self.max_sync_derived = max_sync_derived
         self.min_importance = min_importance
+        self._tracer = tracer
 
     # ─── Merge lever ─────────────────────────────────────────────────────────
 
@@ -210,7 +212,20 @@ class LifecycleManager:
         threshold = (
             self.max_sync_derived if max_sync_derived is None else max_sync_derived
         )
+        span = None
+        if self._tracer is not None:
+            span = self._tracer.begin(name="eviction", kind="eviction",
+                                      attributes={"tenant_id": tenant_id,
+                                                  "record_id": record_id})
+        try:
+            return self._evict(tenant_id=tenant_id, record_id=record_id,
+                               threshold=threshold)
+        finally:
+            if span is not None:
+                self._tracer.end(span)
 
+    def _evict(self, *, tenant_id: str, record_id: str,
+               threshold: int) -> DeletionResult:
         with self.store.session() as conn:
             exists = conn.execute(
                 "SELECT id FROM memories WHERE id = %s AND tenant_id = %s",

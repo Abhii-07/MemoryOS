@@ -1,0 +1,27 @@
+# MemoryOS audit policy — config as code (threat_model Threat 5, G-M5).
+# The audit gate (tests/test_audit.py) exists so that whether a safeguard is
+# "on" is a checked fact of the repository, not a manual setting someone can
+# skip. Every section below is read by src/memory_os/audit/checker.py.
+
+[security_invariants]
+no_llm = true                       # deterministic guarantee (R1): no LLM imports
+pii_pre_guardrail = true            # invariant #5: scrub BEFORE persistence
+hot_paths_use_session = true        # EC-15: never a fresh connect on hot paths
+soft_delete_forbidden = true        # privacy invariant #2: purge is physical
+
+[collector]
+redaction_enabled = true            # Threat 5: collector redacts before export
+hash_sensitive_attributes = true    # span attributes with content names get hashed
+
+[observability]
+typed_span_kinds = ["admission", "ranking_decision", "retrieval", "supersession",
+                    "decay", "eviction", "consolidation", "context_build"]
+
+[priority_layers]
+service = ["src/memory_os/retrieval", "src/memory_os/context",
+           "src/memory_os/admission", "src/memory_os/lifecycle"]
+
+[ledger]
+required_edge_cases = ["EC-01", "EC-02", "EC-03", "EC-04", "EC-05", "EC-06",
+                       "EC-07", "EC-08", "EC-09", "EC-10", "EC-11", "EC-12",
+                       "EC-13", "EC-14", "EC-15", "EC-16", "EC-17", "EC-18"]
