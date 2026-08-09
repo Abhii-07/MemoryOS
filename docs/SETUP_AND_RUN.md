@@ -1,7 +1,7 @@
 # Setup & Run Guide — MemoryOS
 
 > Written for a human with no AI agent. Copy-paste everything below.
-> Last updated: 2026-08-08 (G-M2 gate). Extends with G-M3 commands as that gate lands.
+> Last updated: 2026-08-09 (G-M3 gate). Extends with G-M4+ as those gates land.
 
 Everything in this repo is local: Postgres 17 + pgvector, a Python venv, and `pytest`
 gates. No admin rights, no Docker, no WSL, no cloud account, no AI needed.
@@ -143,17 +143,23 @@ $env:MEMORYOS_DB_DSN="postgresql://memoryos@localhost:5432/memoryos"
 .venv\Scripts\python.exe -m pytest tests/ -v
 ```
 
-Expected (G-M2):
+Expected (G-M3):
 
 ```
+tests\test_admission.py ............................     [100%]
+tests\test_context.py ...............................     [100%]
 tests\test_db.py .............                     [100%]
 tests\test_latency.py .                            [100%]
 tests\test_retrieval.py ..............             [100%]
-27 passed
+54 passed
 ```
 
 The DB schema is applied automatically by test fixtures (`apply_schema`, idempotent),
 so no manual migration step.
+
+> The suite cleans the `memories` table before AND after every test (autouse
+> `clean` fixtures mirror `test_db.py`'s `clean_table`), so the DB is left empty
+> after a full run — nothing persists between runs.
 
 ### Currently written milestone gates
 
@@ -161,7 +167,7 @@ so no manual migration step.
 |---|---|---|
 | G-M1 Storage & tenant isolation | `.venv\Scripts\python.exe -m pytest tests/test_db.py -q` | PASS (12 tests) |
 | G-M2 Hybrid retrieval + RRF + EC-15 latency | `.venv\Scripts\python.exe -m pytest tests/test_retrieval.py tests/test_latency.py -q` | PASS (14 + 1) |
-| G-M3 Admission + context | `pytest tests/test_admission.py -q`, `pytest tests/test_context.py -q` | not yet shipped → docs updated when landed |
+| G-M3 Admission + context | `.venv\Scripts\python.exe -m pytest tests/test_admission.py tests/test_context.py -q` | PASS (24 + 3) |
 
 ### Latency benchmark (EC-15)
 
@@ -232,7 +238,35 @@ covers the G-M1/G-M2 storage + retrieval manual checks. Watch for:
 - `tests/test_db.py` — 12 tests incl. tenant isolation, hard delete, HNSW rank, concurrency
 - `tests/test_retrieval.py` — 14 tests (D3 regressions, EC-08/09/13/16, RRF/BM25 units)
 - `tests/test_latency.py` — EC-15 gate (`-m latency`, 500-row corpus, p95 < 150 ms)
+- `tests/test_admission.py` — 21 tests (ADD/UPDATE/DELETE/NOOP classification, slot
+  supersession per ADR-008, consent purge, PII redaction, MemoryTrap-as-data)
+- `tests/test_context.py` — 6 tests (zone ceilings EC-010, D3 c3 40-token case,
+  injection order, `no_relevant_memory` shape, budget arithmetic)
 - `bench/latency_profile.py` — per-phase latency profiler
 - `pytest.ini` — `testpaths=tests`, `pythonpath=src`, `latency` marker
+- `design/decision_records/ADR-008-entity-slot-linking.md` — the deterministic
+  slot grammar `admission/patterns.py` implements (rule order matters: specific
+  slots like deadline/meeting are checked before the generic `is on X` tool rule)
 
-*End of guide (G-M2). Later gates append their docs here.*
+### The write path (G-M3 admission)
+
+Every turn goes through `Admitter.admit` (`src/memory_os/admission/admitter.py`):
+
+1. **PII pre-guardrail** — `scrub_pii` replaces secrets with placeholders
+   (`[EMAIL]`, `[REDACTED]`, …) *before* persistence (invariant #5)
+2. **NOOP** — stopword-only / punctuation-only turns store nothing (EC-017)
+3. **DELETE** — "forget the X / taco place" → token-intersection match → physical
+   purge (EC-03), no soft flags
+4. **UPDATE** — same `(tenant, user, slot_key)` already active → prior row gets
+   `valid_until`, new row stored as UPDATE with confidence 0.95 (ADR-002/008)
+5. **ADD** — anything else, confidence 1.0
+
+The read path turns retrieval results into a budgeted context block via
+`build_context` (`src/memory_os/context/builder.py`): memories are injected in
+rank order into the `retrieved_memory` zone until that zone's ceiling — a memory
+that doesn't fit is dropped entirely, never overflowed into another zone
+(EC-010). Default zone weights: retrieved_memory 40%, output_reserve 30%,
+system_prompt/history/input 10%, tool_output 5%; explicit `zone_budgets` carve
+out of the *remaining* budget (sum ≤ `token_budget` enforced).
+
+*End of guide (G-M3). Later gates append their docs here.*

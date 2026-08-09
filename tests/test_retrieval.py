@@ -51,6 +51,8 @@ def clean(store):
     with store.connect() as c:
         c.execute("DELETE FROM memories")
     yield
+    with store.connect() as c:
+        c.execute("DELETE FROM memories")
 
 
 @pytest.fixture()

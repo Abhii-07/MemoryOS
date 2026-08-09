@@ -3,55 +3,55 @@
 > One question: **"Where exactly are we RIGHT NOW?"** — keep this file extremely practical. If chat context compacts, open this file and continue.
 
 ## Current Objective
-G-M2 (hybrid retrieval) is built and gated — **commit pending**. Then G-M3 (admission + context) per `design/sprint_plan.md`.
+G-M3 (deterministic admission + context construction) is **built, gated green, and committed** — next is G-M4 per `design/sprint_plan.md`.
 
 ## Current Phase
-Genesis milestones 1–2 done, gated, committed except the final G-M2 commit; next is G-M3.
+Genesis milestones 1–3 done, gated, committed (d2d8e02 → 60cc6a3 → bff78f9 → G-M3 commit); next milestone G-M4.
 
 ## Current Task
-Commit G-M2: `feat(g-m2): hybrid retrieval + RRF + EC-15 latency`, then open G-M3.
+G-M3 commit landed; open G-M4 (per sprint_plan.md — admission/context integration surfaces + remaining ECs).
 
 ## Last Completed Action
-[2026-08-08 evening] G-M2 implementation complete:
-- Local 384-d embedder (sentence-transformers `all-MiniLM-L6-v2`) in `.hf-cache/`, lazy + thread-locked, BM25-only fallback when unavailable.
-- `retrieval/`: tokenizer, Okapi BM25 (tenant-scoped stats), RRF k=60, `HybridRetriever` with two-signal relevance floor (cosine ≥ 0.5 AND ≥2 shared terms, OR ≥ 0.75 paraphrase carve-out).
-- D3 exact-string calibration; c1 closed by supersession (stale scores 0.876 > current 0.657 — proves filtering, not scoring), c6 by the floor, c4 by pre-filter.
-- 14 retrieval tests + EC-15 latency gate (`pytest -m latency`, 500 rows, p95 < 150ms) → **27 passed**.
-- EC-15 fix: psycopg3 `__exit__` closes connections → `MemoryStore.session()` persistent connection, p95 206ms → ~20ms.
-- Sprint risk #4 closed: planner escalates to HNSW at scale (EXPLAIN 20k rows → `idx_memories_dense`).
-- Setup doc + requirements updated for G-M2; scratch data (20562 rows) purged.
+[2026-08-09] G-M3 implementation complete, **54 passed**, DB left empty after runs:
+- `admission/patterns.py` — deterministic grammar (ADR-008): PII scrub (`[EMAIL]`, `[REDACTED]`, `[IP]`, …), delete-target parser, NOOP set, correction markers, slot rules (rule order matters: deadline/meeting before generic `is on X`).
+- `admission/admitter.py` — `Admitter.admit` → ADD / UPDATE (same tenant+user+slot supersedes via `valid_until`, confidence 0.95) / DELETE (token-intersection, physical purge) / NOOP (EC-017); PII redaction before persistence.
+- `context/builder.py` — zone budgets (retrieved_memory 40% etc.), `estimate_tokens` = words×1.3, `build_context` injects in rank order, per-zone ceiling never overflows (EC-010); explicit `zone_budgets` carve out of remaining budget.
+- Gates: `tests/test_admission.py` (21) + `tests/test_context.py` (6) → **54 passed**; the D3 c3 40-token stress keeps the buried correct fact.
+- Fixed mid-build: tool-rule `is on X` added as LAST rule (avoids deadline/meeting collisions); `ContextBudget` partial-zone merging; autouse `clean` now deletes after `yield` (DB left empty at suite end).
+- Docs: SETUP_AND_RUN.md G-M3 section + updated gates table; note in CURRENT.md; journal entry.
 
 ## Last Command Executed
-`pytest tests/test_db.py test_retrieval.py test_latency.py -q` → 27 passed.
+`pytest -q` → 54 passed; `SELECT COUNT(*) FROM memories` → 0 (no residue).
 
 ## Last Meaningful Result
-G-M2 gate green with real embeddings: `hits/query 4.5`, p95 = 19.6ms @ 500 rows (invariant < 150ms). DB empty of scratch data. Working tree = exactly the G-M2 commit set (uncommitted).
+G-M3 gate green: ADD/UPDATE/DELETE/NOOP classification, supersession convergence (12 slots, corrections), PII pre-guardrail leak rate 0.0 (D3 c5 re-run), tenant isolation never crossed, 40-token budget case survives. DB empty of scratch data. Working tree = exactly the G-M3 commit set (uncommitted).
 
 ## Currently Modified Files (for this commit)
-- NEW: `src/memory_os/embeddings/{__init__,embedder}.py`, `src/memory_os/retrieval/{__init__,tokenizer,bm25,rrf,hybrid}.py`, `tests/test_retrieval.py`, `tests/test_latency.py`, `bench/latency_profile.py`
-- MODIFIED: `src/memory_os/db/store.py` (Jsonb fix + `session()`), `requirements.txt` (+sentence-transformers/pytorch), `pytest.ini` (latency marker), `.gitignore` (`.hf-cache/`), `docs/SETUP_AND_RUN.md`, `journal/2026-08-08-session.md`
+- NEW: `src/memory_os/admission/{__init__,patterns,admitter}.py`, `src/memory_os/context/{__init__,builder}.py`, `tests/test_admission.py`, `tests/test_context.py`, `design/decision_records/ADR-008-entity-slot-linking.md`
+- MODIFIED: `tests/test_retrieval.py` (clean-after fixture), `docs/SETUP_AND_RUN.md` (G-M3 section), `journal/2026-08-09-session.md` (pending entry)
 
 ## What I Was About To Do Next
-Commit G-M2 as `feat(g-m2): hybrid retrieval + RRF + EC-15 latency gate`, update checkpoint, then start G-M3 (admission + context, per sprint_plan.md; gates `tests/test_admission.py -q`, `tests/test_context.py -q`).
+Commit G-M3 as `feat(g-m3): deterministic admission + context zones`, then start G-M4.
 
 ## Immediate Next 3 Actions
-1. `git add -A` + commit `feat(g-m2): hybrid retrieval + RRF + EC-15 latency gate` → confirm clean status.
-2. Report G-M2 completion + latency story (206ms → 20ms) to user; await approval to open **G-M3** (admission ADD/UPDATE/DELETE/NOOP + deterministic supersession, context zones + PII guardrail).
-3. If approved: G-M3 build; gate commands `pytest tests/test_admission.py -q` and `pytest tests/test_context.py -q`.
+1. `git add -A` + commit `feat(g-m3): deterministic admission + context gates` → confirm clean status.
+2. Update this checkpoint: G-M3 committed (`git log --oneline` shows it on top of `bff78f9`).
+3. Open G-M4 per `design/sprint_plan.md`.
 
 ## Known Problems
 - Default `python` (3.11) lacks heavy libs — always use `.venv\Scripts\python.exe` (Python 3.14).
 - Postgres must be **detached-started** (WMI) or shell-tool job object kills it (`0xC0000142`).
-- psycopg import failures (missing pq wrapper) seen **only when scripts run in non-repo dirs** (`%LocalTemp%\opencode`) — work from repo root; pytest fine.
-- `.hf-cache/` is a one-time ~80MB download; deleting it drops dense retrieval until re-download (suite skips those tests).
+- psycopg import failures seen **only when scripts run in non-repo dirs** (`%LocalTemp%\opencode`) — work from repo root; pytest fine.
+- `zone_budgets` with tiny `token_budget` now scales other zones to the *remaining* budget — a strict-`40` D3 case needs `zone_budgets={"retrieved_memory": 40}`.
 
 ## Do Not Repeat
-- No writes to old repo (`D:\Abhii\Projects\Conversational-Memory-Intelligence-System-`, no `memory_type` column resurrection; data_model.md is canonical).
-- No `with conn:` + fresh `psycopg.connect()` on hot paths (closes conn on exit / 30ms per op) — use `store.session()`.
-- Do not run Python code files from `%TEMP%` with the repo venv; keep scripts under `D:\Abhii\Projects\MemoryOS`.
+- No writes to old repo (`D:\Abhii\Projects\Conversational-Memory-Intelligence-System-`); no `memory_type` column resurrection; data_model.md canonical.
+- No `with conn:` + fresh `psycopg.connect()` on hot paths — use `store.session()`.
+- Do not run Python code from `%TEMP%` with the repo venv; keep scripts under `D:\Abhii\Projects\MemoryOS`.
+- Don't seed via `store.add(...)` positionally — signature is keyword-only (`tenant_id`, `user_id`, `text`, `dense_embedding`, `sparse_terms`).
 
 ## Verification Required
-After G-M2 commit: `git status` clean; `git log` shows the new `feat(g-m2)` on top of `60cc6a3`.
+After G-M3 commit: `git status` clean; `git log --oneline -4` shows the new `feat(g-m3)` on top of `bff78f9`; DB `COUNT(*) = 0`.
 
 ## Resume From Here
-`docs/RESUME.md` → `docs/SESSION_STATE.md` → `CURRENT.md` → `journal/2026-08-08-session.md`.
+`docs/RESUME.md` → `docs/SESSION_STATE.md` → `CURRENT.md` → `journal/` most recent.
