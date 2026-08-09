@@ -143,17 +143,18 @@ $env:MEMORYOS_DB_DSN="postgresql://memoryos@localhost:5432/memoryos"
 .venv\Scripts\python.exe -m pytest tests/ -v
 ```
 
-Expected (G-M5):
+Expected (G-M6):
 
 ```
 tests\test_admission.py ............................     [100%]
+tests\test_adversarial.py .........              [100%]
 tests\test_context.py ...............................     [100%]
 tests\test_db.py .............                     [100%]
 tests\test_latency.py .                            [100%]
 tests\test_lifecycle.py ................           [100%]
 tests\test_observability.py ..................     [100%]
 tests\test_retrieval.py ..............             [100%]
-88 passed
+97 passed
 ```
 
 The DB schema is applied automatically by test fixtures (`apply_schema`, idempotent),
@@ -172,6 +173,7 @@ so no manual migration step.
 | G-M3 Admission + context | `.venv\Scripts\python.exe -m pytest tests/test_admission.py tests/test_context.py -q` | PASS (24 + 3) |
 | G-M4 Lifecycle + deletion propagation | `.venv\Scripts\python.exe -m pytest tests/test_lifecycle.py -q` | PASS (16 tests) |
 | G-M5 Observability + audit gate | `.venv\Scripts\python.exe -m pytest tests/test_observability.py -q` | PASS (18 tests) |
+| G-M6 Adversarial replay + D3 acceptance | `.venv\Scripts\python.exe -m pytest tests/test_adversarial.py -q` + `python -m bench.acceptance` | PASS (9 tests; all targets) |
 
 ### Latency benchmark (EC-15)
 
@@ -336,4 +338,43 @@ checked fact of the repository:
 $env:PYTHONPATH="src"; .venv\Scripts\python.exe -c "from memory_os.audit.checker import AuditChecker; r=AuditChecker().audit(); print('PASS' if r.passed else 'FAIL'); [print(f'  [{\"ok\" if x.passed else \"FAIL\"}] {x.rule}: {x.detail}') for x in r.results]"
 ```
 
-*End of guide (G-M5). Later gates append their docs here.*
+### Adversarial replay + D3 acceptance run (G-M6)
+
+Two gates close the threat-model verification loops:
+
+- **Adversarial replay** — `tests/test_adversarial.py` (marker
+  `adversarial`) replays the named Week-4 attack families against the real
+  stack (threat_model Threat 2 verification, line 107-110):
+  - *MemoryGraft*: a directive embedded in `tool_derived` output is admitted
+    but never outranks its benign `user_stated` twin — provenance-weighted
+    ranking holds across paraphrased queries; a correcting user turn
+    supersedes the poisoned row via slot key.
+  - *MINJA / MemoryTrap class*: newline-framed directive text is stored
+    verbatim but inert — `build_context` only ever emits `- <text>` data
+    lines, never executable directives.
+  - *Influence over time*: low-importance poisoned rows are selected by
+    `decay_candidates` and, once decayed, have exactly zero presence in
+    retrieval (the design's "default expiry reduces influence" claim).
+  - *Cross-tenant corpus* (EC-05 / Threat 1): adversarially crafted
+    near-identical and paraphrased queries never surface another tenant's
+    rows — including the explicit `no_relevant_memory` outcome.
+- **D3 acceptance replay** — `python -m bench.acceptance` re-runs the exact
+  10 hand-written workload cases from `experiments/naive_baseline/dataset.py`
+  through admission → retrieval → budgeted context injection, aggregates the
+  same metrics as `summary.json`, and compares against the Deliverable
+  targets. Requirement: contradiction < 5%, cold-start FP < 5%, sensitive
+  leak 0%, precision@1 = 1.0, p95 < 150 ms. Result vs baseline:
+
+  | metric | baseline | MemoryOS | target |
+  |---|---|---|---|
+  | precision_at_1 | 0.857 | **1.000** | 1.000 |
+  | contradiction_failure_rate | 0.333 | **0.000** | < 0.05 |
+  | cold_start_false_positive_rate | 0.500 | **0.000** | < 0.05 |
+  | sensitive_leak_rate_retrieval | 1.000 | **0.000** | 0 |
+  | sensitive_leak_rate_injection | 1.000 | **0.000** | 0 |
+  | latency_p95_s | 0.0008 | **0.012** | < 0.150 |
+
+  Results are written to `bench/results/acceptance.json`; the run exits
+  non-zero on any miss.
+
+*End of guide (G-M6). Later gates append their docs here.*

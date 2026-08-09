@@ -1,0 +1,38 @@
+{
+  "generated": "2026-08-09T21:18:35",
+  "suite": "D3 workload replay (experiments/naive_baseline/dataset.py)",
+  "memoryos": {
+    "total_cases": 10,
+    "recall_at_5": 1.0,
+    "precision_at_1": 1.0,
+    "contradiction_failure_rate": 0.0,
+    "cold_start_false_positive_rate": 0.0,
+    "sensitive_leak_rate_retrieval": 0.0,
+    "sensitive_leak_rate_injection": 0.0,
+    "task_level_pass_rate": 0.9,
+    "latency_p50_s": 0.00965,
+    "latency_p95_s": 0.012101,
+    "avg_tokens_used": 11.3
+  },
+  "baseline": {
+    "total_cases": 10,
+    "recall_at_5": 1.0,
+    "precision_at_1": 0.8571428571428571,
+    "contradiction_failure_rate": 0.3333333333333333,
+    "cold_start_false_positive_rate": 0.5,
+    "sensitive_leak_rate_retrieval": 1.0,
+    "sensitive_leak_rate_injection": 1.0,
+    "task_level_pass_rate": 0.6666666666666666,
+    "latency_p50_s": 0.000734,
+    "latency_p95_s": 0.0008013,
+    "avg_tokens_used": 29.2
+  },
+  "targets": {
+    "contradiction_failure_rate": 0.05,
+    "cold_start_false_positive_rate": 0.05,
+    "sensitive_leak_rate_retrieval": 0.0,
+    "sensitive_leak_rate_injection": 0.0,
+    "precision_at_1": 1.0,
+    "latency_p95_s": 0.15
+  }
+}
