@@ -3,13 +3,16 @@
 > One question: **"Where exactly are we RIGHT NOW?"** — keep this file extremely practical. If chat context compacts, open this file and continue.
 
 ## Current Objective
-**Consolidate all Genesis-built code into `MemoryOS-App\`** (fully self-contained app folder). Move is done and verified (97 passed, acceptance PASS, DB 0/0 — all run from the new location); commit pending.
+**MemoryOS-App consolidation is COMPLETE** (commit `08ef825`): all Genesis-built code lives in `MemoryOS-App\`, tree clean, no pending work.
 
 ## Current Phase
-Repo restructure (post-M7). History: G-M1 `d2d8e02` → G-M6 `caac791`, then `ce6bad0` (docs sync). All design milestones implemented; this is an organizational refactor, not new functionality.
+Repo restructure (post-M7) — done. History: G-M1 `d2d8e02` → G-M6 `caac791`, `ce6bad0` docs sync, `08ef825` refactor(app). All design milestones implemented; all verification green.
 
 ## Current Task
-Commit the move: `refactor(app): consolidate genesis-built code under MemoryOS-App`. Then verify tree clean + log.
+None pending. Next work (if any) starts with `cd MemoryOS-App`.
+
+## Last Completed Action
+[2026-08-09] Committed `refactor(app): consolidate genesis-built code under MemoryOS-App` (`08ef825`, 41 files: 36 renames with history preserved, README + journal new). `git status` clean; tree moved fully under `MemoryOS-App\` (src/tests/bench/audit/pytest.ini/requirements.txt/.venv/.hf-cache).
 
 ## Last Completed Action
 [2026-08-09] MemoryOS-App consolidation:
@@ -26,18 +29,15 @@ Commit the move: `refactor(app): consolidate genesis-built code under MemoryOS-A
 The app is now a single self-contained folder — code, tests, benchmarks, audit policy, venv, and model cache all under `MemoryOS-App\` — with the repo root dedicated to course deliverables. Everything green from the new location; only one file (bench/acceptance.py) needed a path change.
 
 ## Currently Modified Files (for this commit)
-- RENAMED (git mv, history preserved): `src/`, `tests/`, `bench/`, `audit/policy.toml`, `pytest.ini`, `requirements.txt` → `MemoryOS-App/`
-- MODIFIED: `MemoryOS-App/bench/acceptance.py` (APP_ROOT/REPO_ROOT split), `docs/SETUP_AND_RUN.md`, `docs/RESUME.md`, `docs/SESSION_STATE.md`, `CURRENT.md`
-- NEW: `MemoryOS-App/README.md`, `journal/2026-08-09-session-gm6b.md`
-- UNTRACKED-ignored: `.venv/`, `.hf-cache/` moved physically (gitignored)
+None — tree is clean after `08ef825`.
 
 ## What I Was About To Do Next
-Commit the refactor; then any new work starts with `cd MemoryOS-App`.
+All planned work is done.
 
 ## Immediate Next 3 Actions
-1. `git add -A` + commit `refactor(app): consolidate genesis-built code under MemoryOS-App`.
-2. Verify: `git status` clean; `git log --oneline -3` shows the refactor on top of `ce6bad0`.
-3. Optional: treelist sanity (`Get-ChildItem MemoryOS-App`) to confirm layout.
+1. (none — steady state; next user request starts here)
+2. If continuing: pick a hardening/extension task (e.g. R3 retrieval quality, additional EC alignment, packaging) — confirm scope with user first.
+3. Any new session: re-verify quickly (`git status`, DB 0/0) before starting.
 
 ## Known Problems
 - Default `python` (3.11) lacks heavy libs — always use `MemoryOS-App\.venv\Scripts\python.exe`.
@@ -55,7 +55,7 @@ Commit the refactor; then any new work starts with `cd MemoryOS-App`.
 - REAL comparisons → `::float4`.
 
 ## Verification Required
-After the refactor commit: `git status` clean; `git log --oneline -3` shows `refactor(app)` on top of `ce6bad0`; from `MemoryOS-App\`: `pytest -q` → 97 passed; DB `0 | 0`.
+Done at commit time: `git status` clean; log shows `08ef825` on top of `ce6bad0`; from `MemoryOS-App\`: `pytest -q` → 97 passed; `bench.acceptance` PASS; DB `0 | 0`.
 
 ## Resume From Here
 `docs/RESUME.md` → `docs/SESSION_STATE.md` → `CURRENT.md` → `journal/2026-08-09-session-gm6b.md`.
