@@ -46,3 +46,12 @@ desktop.ini
 # If you *must* ignore a specific generated PDF, list it here explicitly.
 
 # Generated baseline report files are real artifacts — keep tracked.
+
+# Agent-continuity files — local-only, not part of the public tree
+AGENTS.md
+CURRENT.md
+PLAN.md
+docs/SESSION_STATE.md
+docs/RESUME.md
+docs/PROJECT_MEMORY.md
+journal/
