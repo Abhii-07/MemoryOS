@@ -34,13 +34,17 @@
 - Observability: in-process typed spans, content only in events, collector-level redaction + hashed attributes; audit gate = config-as-code (`audit/policy.toml`).
 
 ## Constraints (operational)
-1. Always `.venv\Scripts\python.exe` (3.14) + `$env:PYTHONPATH="src"`, cwd = repo root.
-2. Postgres must be started **detached** (WMI) — a shell job object kills it (`0xC0000142`). DSN default `postgresql://memoryos@localhost:5432/memoryos`.
-3. No LLM anywhere on write/read/lifecycle paths (audit rule `no_llm`).
-4. Hot paths use `store.session()`; never raw `psycopg.connect` outside `db/` (audit rule).
-5. Memory content never in span attributes — events only, redacted at collector export.
-6. REAL column comparisons need `::float4` casts; `decay_candidates` returns UUID ids.
-7. PII pre-guardrail scrubs before persistence (invariant #5) — verified statically by audit rule.
+1. Always `.venv\Scripts\python.exe` (3.14) + `$env:PYTHONPATH="src"`, cwd = `MemoryOS-App\`.
+2. App code is consolidated in `MemoryOS-App\` (`src/`, `tests/`, `bench/`, `audit/`, `pytest.ini`,
+   `requirements.txt`, `.venv/`, `.hf-cache/`) — fully self-contained; the repo root holds course
+   deliverables (`design/`, `docs/`, `experiments/`, `research/`, `journal/`, `.genesis/`, …) and
+   `bench.acceptance` reaches the D3 dataset via the repo-root path (`parents[2]`).
+3. Postgres must be started **detached** (WMI) — a shell job object kills it (`0xC0000142`). DSN default `postgresql://memoryos@localhost:5432/memoryos`.
+4. No LLM anywhere on write/read/lifecycle paths (audit rule `no_llm`).
+5. Hot paths use `store.session()`; never raw `psycopg.connect` outside `db/` (audit rule).
+6. Memory content never in span attributes — events only, redacted at collector export.
+7. REAL column comparisons need `::float4` casts; `decay_candidates` returns UUID ids.
+8. PII pre-guardrail scrubs before persistence (invariant #5) — verified statically by audit rule.
 
 ## Invariants (enforced by `tests/test_observability.py` audit gate + suite)
 - Tenant isolation is real at all three layers (storage/index/retrieval filtering).
@@ -64,18 +68,18 @@ Markers: `latency` (EC-15), `adversarial` (Threat 1/2 replay). Fixtures leave DB
 ## Important Files
 | File | Purpose |
 |---|---|
-| `src/memory_os/db/{store.py,schema.sql}` | storage; propagation_jobs table |
-| `src/memory_os/admission/{patterns,admitter}.py` | deterministic classification + PII scrub |
-| `src/memory_os/retrieval/{hybrid,bm25,rrf}.py` | tenant-prefiltered RRF fusion + provenance weights |
-| `src/memory_os/context/builder.py` | zone-budgeted injection |
-| `src/memory_os/lifecycle/manager.py` | merge/decay/evict + lineage cascade |
-| `src/memory_os/observability/tracer.py` | typed spans + RedactingCollector |
-| `src/memory_os/audit/checker.py` + `audit/policy.toml` | config-as-code audit gate |
-| `bench/{acceptance,latency_profile}.py` | D3 acceptance + EC-15 profiles |
-| `tests/` | 8 gate files, 97 tests |
+| `MemoryOS-App/src/memory_os/db/{store.py,schema.sql}` | storage; propagation_jobs table |
+| `MemoryOS-App/src/memory_os/admission/{patterns,admitter}.py` | deterministic classification + PII scrub |
+| `MemoryOS-App/src/memory_os/retrieval/{hybrid,bm25,rrf}.py` | tenant-prefiltered RRF fusion + provenance weights |
+| `MemoryOS-App/src/memory_os/context/builder.py` | zone-budgeted injection |
+| `MemoryOS-App/src/memory_os/lifecycle/manager.py` | merge/decay/evict + lineage cascade |
+| `MemoryOS-App/src/memory_os/observability/tracer.py` | typed spans + RedactingCollector |
+| `MemoryOS-App/src/memory_os/audit/checker.py` + `MemoryOS-App/audit/policy.toml` | config-as-code audit gate |
+| `MemoryOS-App/bench/{acceptance,latency_profile}.py` | D3 acceptance + EC-15 profiles |
+| `MemoryOS-App/tests/` | 8 gate files, 97 tests |
 | `design/` | canonical design set (D4) incl. sprint_plan, threat_model, api_contracts |
 
-## Commands
+## Commands (all from `MemoryOS-App\`)
 - Suite: `$env:PYTHONPATH="src"; .venv\Scripts\python.exe -m pytest -q`
 - Acceptance: `$env:PYTHONPATH="src"; .venv\Scripts\python.exe -m bench.acceptance`
 - Audit gate: `$env:PYTHONPATH="src"; .venv\Scripts\python.exe -c "from memory_os.audit.checker import AuditChecker; print('PASS' if AuditChecker().audit().passed else 'FAIL')"`

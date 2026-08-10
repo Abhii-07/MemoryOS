@@ -37,7 +37,8 @@ from memory_os.context import build_context
 from memory_os.db.store import MemoryStore
 from memory_os.retrieval.hybrid import HybridRetriever, NoRelevantMemory
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+APP_ROOT = Path(__file__).resolve().parents[1]          # MemoryOS-App/
+REPO_ROOT = Path(__file__).resolve().parents[2]         # repo root (experiments live there)
 DATASET = REPO_ROOT / "experiments" / "naive_baseline" / "dataset.py"
 
 # D3 workload cases carrying stale/contradicting pairs (contradiction metric)
@@ -178,7 +179,7 @@ def aggregate(rows: list[dict]) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--out", default=str(REPO_ROOT / "bench" / "results" /
+    ap.add_argument("--out", default=str(APP_ROOT / "bench" / "results" /
                                          "acceptance.json"))
     args = ap.parse_args()
 
