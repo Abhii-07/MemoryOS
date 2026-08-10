@@ -108,7 +108,8 @@ run this block once.
 ## 5. Python venv + dependencies
 
 ```powershell
-# From the repo root
+# From MemoryOS-App (venv lives with the app)
+cd MemoryOS-App
 py -3 -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 
@@ -117,8 +118,8 @@ py -3 -m venv .venv
 ```
 
 **First run downloads the embedding model** (ADR-007): the retrieval path uses a local
-`sentence-transformers` model (`all-MiniLM-L6-v2`, ~80 MB) stored in the repo's
-`.hf-cache/` folder. The first `pytest` or benchmark run downloads it automatically
+`sentence-transformers` model (`all-MiniLM-L6-v2`, ~80 MB) stored in `MemoryOS-App\.hf-cache/`.
+The first `pytest` or benchmark run downloads it automatically
 (one time, internet needed once). After that everything works offline.
 
 - If the model/cache is missing, the suite **skips** the dense tests and the system

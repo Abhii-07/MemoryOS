@@ -59,7 +59,7 @@
 Markers: `latency` (EC-15), `adversarial` (Threat 1/2 replay). Fixtures leave DB empty (memories 0, propagation_jobs 0).
 
 ## Acceptance Status (G-M6, vs D3 naive baseline)
-`python -m bench.acceptance` → PASS. precision@1 **1.0** (0.857) · contradiction **0.0** (0.333) · cold-start FP **0.0** (0.5) · sensitive leak retrieval/injection **0.0** (1.0/1.0) · task-level **0.9** (0.667) · p95 **12 ms** (<150 ms). Artifact: `bench/results/acceptance.json`.
+`python -m bench.acceptance` → PASS. precision@1 **1.0** (0.857) · contradiction **0.0** (0.333) · cold-start FP **0.0** (0.5) · sensitive leak retrieval/injection **0.0** (1.0/1.0) · task-level **0.9** (0.667) · p95 **12 ms** (<150 ms). Artifact: `MemoryOS-App/bench/results/acceptance.json`.
 
 ## Git State
 - branch: main; latest: `caac791` (G-M6); history: `d2d8e02` G-M1 · `bff78f9` G-M2 · `92c9490` G-M3 · `8ab43f1` G-M4 · `161c6ca` G-M5 · `caac791` G-M6 (+ docs commits before G-M1).
