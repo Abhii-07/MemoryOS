@@ -3,39 +3,34 @@
 > One question: **"Where exactly are we RIGHT NOW?"** — keep this file extremely practical. If chat context compacts, open this file and continue.
 
 ## Current Objective
-**Move the whole app (including tests) under `implementation/`** per the handbook D6 layout: `implementation/MemoryOS-App/` — move done + one code fix applied; verification (pytest/bench/audit/DB) pending; commit pending.
+**Public push complete** — MemoryOS published at `github.com/Abhii-07/MemoryOS` (`main`, 16 commits, head `2e93abf`). One loose end: commit the refreshed `bench/results/acceptance.json` + journal entry.
 
 ## Current Phase
-Repo layout pass (post-M7 restructure #2). History: G-M1 `d2d8e02` → G-M6 `caac791`, `ce6bad0` docs sync, `08ef825` consolidation (MemoryOS-App/), now D6 placement (implementation/MemoryOS-App/).
+Public launch (post-restructure). History: G-M1 `d2d8e02` → G-M6 `caac791`, consolidation/restructure commits, then publish `2e93abf`.
 
 ## Current Task
-Verify everything from the new depth and commit `refactor(repo): move app under implementation/ per D6 layout`:
-1. `.venv` still imports (psycopg/numpy/sentence-transformers) at the moved path.
-2. From `implementation\MemoryOS-App`: `pytest -q` → 97 passed; `python -m bench.acceptance` → PASS; audit gate → PASS; DB `0 | 0`.
-3. `git add -A` + commit; `git status` clean.
+Commit the bench-artifact refresh + journal; verify clean tree; then steady state (deferred: website, product branch split — roadmap note only).
 
 ## Last Completed Action
-[2026-08-09] Moved `MemoryOS-App` → `implementation\MemoryOS-App` physically (Move-Item; `.venv`/`.hf-cache` traveled with it). `git add -A` → all tracked files registered as R100 renames. Applied the only code fix needed: `bench/acceptance.py` `REPO_ROOT = parents[2] → parents[3]` (dataset stays at repo root `experiments/`; `APP_ROOT=parents[1]`, checker/test policy `parents[3]`, embedder `.hf-cache`, pytest.ini `testpaths=tests` all verified depth-immune). Rewrote `implementation/README.md` (no longer a placeholder). Docs updated: `docs/SETUP_AND_RUN.md`, `docs/RESUME.md`, `docs/SESSION_STATE.md`, root `README.md` (layout + quick summary now `cd implementation\MemoryOS-App`), `implementation/MemoryOS-App/README.md` (link depth). `verification/` intentionally left as-is (empty placeholder — user's call).
+[2026-08-09] Published repo: README reframed (`2e93abf chore(publish): open-source framing`), pre-push ticket green (97 tests, bench PASS, secret scan clean, 136 tracked files), remote added, `git push -u origin main` → remote HEAD = `2e93abf`. Auth via Windows Credential Manager (no token in chat). Website + product-branch split deferred to README roadmap.
 
 ## Last Command Executed
-`Move-Item MemoryOS-App implementation\MemoryOS-App` → OK (src/bench/.venv/.hf-cache all present). `git add -A` staged 40 R100 renames.
+`git push -u origin main` → `* [new branch] main -> main`, EXIT=0. `git ls-remote origin` → HEAD = `2e93abf`.
 
 ## Last Meaningful Result
-The handbook layout is now truthful: `implementation/` holds the real D6 implementation (whole app incl. tests, venv, cache), `verification/` stays empty per user decision. App-relative path logic means the entire app moves with exactly ONE mechanism change (`REPO_ROOT` depth).
+The full 16-commit history + deliverable tree is publicly live at `github.com/Abhii-07/MemoryOS`; local tree matches remote HEAD exactly; only the refreshed acceptance artifact + journal remain to commit.
 
 ## Currently Modified Files (for this commit)
-- RENAMED (R100 via git): `MemoryOS-App/*` → `implementation/MemoryOS-App/*` (40 tracked files: src, tests, bench, audit, pytest.ini, requirements.txt, README.md, bench/results/acceptance.json)
-- MODIFIED: `implementation/MemoryOS-App/bench/acceptance.py` (REPO_ROOT parents[3]), `implementation/README.md` (rewrite), `implementation/MemoryOS-App/README.md` (link depth), `README.md`, `docs/SETUP_AND_RUN.md`, `docs/RESUME.md`, `docs/SESSION_STATE.md`, `CURRENT.md`
-- UNTRACKED-ignored: `.venv/`, `.hf-cache/` moved physically (gitignored)
-- UNTOUCHED by design: `verification/` (stays empty), `journal/2026-08-09-session-gm6b.md` (historical)
+- MODIFIED: `implementation/MemoryOS-App/bench/results/acceptance.json` (bench re-run refreshed p95: 0.011 vs 0.010)
+- NEW: `journal/2026-08-09-session-publish.md`, `CURRENT.md` (this update)
 
 ## What I Was About To Do Next
-Run the verify loop (venv import → pytest 97 → acceptance PASS → audit PASS → DB 0/0) then commit.
+Commit the refresh + journal; `git push`; verify clean + remote sync.
 
 ## Immediate Next 3 Actions
-1. `.venv\Scripts\python.exe -c "import psycopg, numpy, sentence_transformers"` at `implementation\MemoryOS-App`.
-2. `pytest -q` → 97 passed; `python -m bench.acceptance` → PASS; audit gate → PASS; DB counts → `0 | 0`.
-3. `git add -A` + commit `refactor(repo): move app under implementation/ per D6 layout`; verify clean.
+1. `git add -A` + commit `chore(bench): refresh acceptance artifact after publish` (includes journal + CURRENT).
+2. `git push` → remote sync; verify `git status` clean + `ls-remote` HEAD matches.
+3. Steady state: deferred items are website (next round) + product branch split (after planning) — documented in README roadmap.
 
 ## Known Problems
 - Default `python` (3.11) lacks heavy libs — always use `implementation\MemoryOS-App\.venv\Scripts\python.exe`.

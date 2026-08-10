@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-10T13:06:55",
+  "generated": "2026-08-10T19:00:31",
   "suite": "D3 workload replay (experiments/naive_baseline/dataset.py)",
   "memoryos": {
     "total_cases": 10,
@@ -10,8 +10,8 @@
     "sensitive_leak_rate_retrieval": 0.0,
     "sensitive_leak_rate_injection": 0.0,
     "task_level_pass_rate": 0.9,
-    "latency_p50_s": 0.009035,
-    "latency_p95_s": 0.010972,
+    "latency_p50_s": 0.009611,
+    "latency_p95_s": 0.011288,
     "avg_tokens_used": 11.3
   },
   "baseline": {
