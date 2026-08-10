@@ -6,48 +6,44 @@
 ## Read First
 1. `docs/SESSION_STATE.md` — canonical state, decisions, invariants, commands, resume point
 2. `CURRENT.md` — where exactly we are now
-3. `PLAN.md` — full plan with statuses
-4. `docs/DECISIONS.md` — decisions D-001…D-010
-5. `journal/2026-08-08-session.md` — today's chronology (append, don't rewrite)
+3. `design/sprint_plan.md` — the milestone map (G-M1…G-M6)
+4. `docs/DECISIONS.md` — decisions D-001…
+5. `journal/` — latest `2026-08-09-session-gm*.md` (append, don't rewrite)
 
 ## Current State
-MemoryOS repo exists (`D:\Abhii\Projects\MemoryOS`), branch `main`, **0 commits**, skeleton dirs + continuity docs committed (this checkpoint = repo's FIRST commit). Old repo and Opencode are read-only sources.
+MemoryOS repo (`D:\Abhii\Projects\MemoryOS`, branch `main`) — **all six build milestones committed and green**:
+`d2d8e02` G-M1 → `bff78f9` G-M2 → `92c9490` G-M3 → `8ab43f1` G-M4 → `161c6ca` G-M5 → `caac791` G-M6.
+Full suite **97 passed**; D3 acceptance replay **PASS** (all targets); DB Postgres 17 + pgvector local, left empty (0/0) after runs.
 
 ## Current Objective
-Execute the locked 7-phase plan: **Phase 0 (finish) → Phase 1 (D1 merge) → … → Phase 7 (gates)**. Every phase = one commit; history clean; final answer "fresh session can continue" must be YES only after verification.
+Post-M7 steady state: all `sprint_plan.md` milestones (M1–M7, R1–R8) have passing demo commands. No milestone is in flight; next work is hardening/extension slices (e.g. API layer, dashboard, extra adversarial coverage) — nothing is open unless CURRENT.md says so.
 
 ## Last Completed Step
-[2026-08-08] Wrote continuity docs and this checkpoint; `git init` was already done by the user (0 commits at that point).
+[2026-08-09] G-M6 committed `caac791` — adversarial replay (MemoryGraft/MINJA, 9 tests) + `bench/acceptance.py` D3 final acceptance (contradiction 0% vs 33%, cold-start FP 0% vs 50%, leak 0% vs 100%, precision@1 1.0 vs 0.857, p95 12 ms vs 150 ms target).
 
 ## Next Step
-1. `git -C D:\Abhii\Projects\MemoryOS add -A`
-2. `git -C D:\Abhii\Projects\MemoryOS commit -m "docs(continuity): persist session state and resume checkpoint"`
-3. Verify `git status` clean → **then Phase 0 remaining**: port `C:\Users\CR7\AppData\Local\Temp\opencode\build_pdfs.py` → `tools/build_pdfs.py` and run a smoke PDF build.
-4. Then Phase 1 (D1 merge).
+None in flight. If starting new work: 1) read `design/sprint_plan.md` / `.genesis/PLAN.md` for the next slice, 2) write it as its own gate + commit.
 
 ## Important Constraints
-- Old repo `Conversational-Memory-Intelligence-System-`: **READ-ONLY forever** — never write/edit.
-- `D:\Abhii\Opencode` is **not a git repo** — it's an unversioned source to copy from.
-- Local-only git; no LICENSE; no secrets; no placeholders ("TODO") in deliverables.
-- Every claim tagged `[P]/[A]/[O]` in deliverable docs.
-- PDFs generated from markdown via `tools/build_pdfs.py` (Python 3.14 path), never hand-edited.
-- Python 3.14 = PDF/tooling; Python 3.11 (or `.venv`) = baseline/scikit-learn.
+- Old repo `Conversational-Memory-Intelligence-System-`: **READ-ONLY forever**.
+- Postgres 17 + pgvector only; no SQLite branch; postmaster must be WMI-detached (job objects kill it, `0xC0000142`).
+- Always `.venv\Scripts\python.exe` (3.14) with `$env:PYTHONPATH="src"`, working dir = repo root (never `%TEMP%`).
+- No LLM anywhere on write/read/lifecycle paths; deterministic, reproducible (R8).
+- Memory content only in span *events* (never attributes); collector redacts at export.
+- Local-only git; no LICENSE/remote/no secrets; hot paths use `store.session()`.
 
 ## Verification (remember to run)
-- `git -C D:\Abhii\Projects\MemoryOS status` (expect CLEAN after each phase commit)
-- `git log --oneline` (one commit per phase)
-- PDF smoke: after any change to `tools/`, rebuild a fixture PDF; check page count.
-- Baseline (Phase 3): rerun `run_baseline.py` → CSVs/JSONL produced; numbers stable.
+- `git status` clean after commit; `pytest -q` → 97 passed; DB counts `0 | 0`.
+- `python -m bench.acceptance` → PASS (all targets) after any retrieval/admission change.
+- `pytest tests/test_observability.py` audit gate must PASS after any policy/security change.
 
 ## Do NOT
 - Write to old repo or `D:\Abhii\Opencode`.
-- Re-create skeleton dirs (already exist).
-- Mark `[x]` anything unverified (gate rule).
-- Introduce `LICENSE`, remote, GitHub Actions.
+- Seed `store.add(...)` positionally (keyword-only); compare REAL columns with `::float4`; use `str(c["id"])` for lifecycle UUIDs.
+- Put raw memory content in span attributes; bypass the collector.
 
 ## Definition of Done (project-wide)
-- Every deliverable D1–D8 present with real artifacts (no placeholder), committed.
-- All claims cited with `[P]/[A]/[O]`; PDFs regenerated & page counts stable.
-- All invariants (#1–#5) checkable in D4/D6 (tests to exist).
-- `docs/*` + `CURRENT.md` + `journal` all consistent with final state.
-- Fresh-session question answered YES after verification.
+- Every design milestone has a passing demo command (DONE through M7 — verified at G-M6).
+- All invariants checkable and tested (audit gate enforces them).
+- `docs/*` + `CURRENT.md` + `journal` consistent with the latest commit.
+- Fresh-session question "can a fresh session continue from repo alone" = YES (verified this resume file).
