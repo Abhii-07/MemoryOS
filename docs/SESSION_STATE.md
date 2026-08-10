@@ -34,8 +34,8 @@
 - Observability: in-process typed spans, content only in events, collector-level redaction + hashed attributes; audit gate = config-as-code (`audit/policy.toml`).
 
 ## Constraints (operational)
-1. Always `.venv\Scripts\python.exe` (3.14) + `$env:PYTHONPATH="src"`, cwd = `MemoryOS-App\`.
-2. App code is consolidated in `MemoryOS-App\` (`src/`, `tests/`, `bench/`, `audit/`, `pytest.ini`,
+1. Always `.venv\Scripts\python.exe` (3.14) + `$env:PYTHONPATH="src"`, cwd = `implementation\MemoryOS-App\`.
+2. App code is consolidated in `implementation\MemoryOS-App\` (`src/`, `tests/`, `bench/`, `audit/`, `pytest.ini`,
    `requirements.txt`, `.venv/`, `.hf-cache/`) — fully self-contained; the repo root holds course
    deliverables (`design/`, `docs/`, `experiments/`, `research/`, `journal/`, `.genesis/`, …) and
    `bench.acceptance` reaches the D3 dataset via the repo-root path (`parents[2]`).
@@ -59,7 +59,7 @@
 Markers: `latency` (EC-15), `adversarial` (Threat 1/2 replay). Fixtures leave DB empty (memories 0, propagation_jobs 0).
 
 ## Acceptance Status (G-M6, vs D3 naive baseline)
-`python -m bench.acceptance` → PASS. precision@1 **1.0** (0.857) · contradiction **0.0** (0.333) · cold-start FP **0.0** (0.5) · sensitive leak retrieval/injection **0.0** (1.0/1.0) · task-level **0.9** (0.667) · p95 **12 ms** (<150 ms). Artifact: `MemoryOS-App/bench/results/acceptance.json`.
+`python -m bench.acceptance` → PASS. precision@1 **1.0** (0.857) · contradiction **0.0** (0.333) · cold-start FP **0.0** (0.5) · sensitive leak retrieval/injection **0.0** (1.0/1.0) · task-level **0.9** (0.667) · p95 **12 ms** (<150 ms). Artifact: `implementation/MemoryOS-App/bench/results/acceptance.json`.
 
 ## Git State
 - branch: main; latest: `caac791` (G-M6); history: `d2d8e02` G-M1 · `bff78f9` G-M2 · `92c9490` G-M3 · `8ab43f1` G-M4 · `161c6ca` G-M5 · `caac791` G-M6 (+ docs commits before G-M1).
@@ -68,18 +68,18 @@ Markers: `latency` (EC-15), `adversarial` (Threat 1/2 replay). Fixtures leave DB
 ## Important Files
 | File | Purpose |
 |---|---|
-| `MemoryOS-App/src/memory_os/db/{store.py,schema.sql}` | storage; propagation_jobs table |
-| `MemoryOS-App/src/memory_os/admission/{patterns,admitter}.py` | deterministic classification + PII scrub |
-| `MemoryOS-App/src/memory_os/retrieval/{hybrid,bm25,rrf}.py` | tenant-prefiltered RRF fusion + provenance weights |
-| `MemoryOS-App/src/memory_os/context/builder.py` | zone-budgeted injection |
-| `MemoryOS-App/src/memory_os/lifecycle/manager.py` | merge/decay/evict + lineage cascade |
-| `MemoryOS-App/src/memory_os/observability/tracer.py` | typed spans + RedactingCollector |
-| `MemoryOS-App/src/memory_os/audit/checker.py` + `MemoryOS-App/audit/policy.toml` | config-as-code audit gate |
-| `MemoryOS-App/bench/{acceptance,latency_profile}.py` | D3 acceptance + EC-15 profiles |
-| `MemoryOS-App/tests/` | 8 gate files, 97 tests |
+| `implementation/MemoryOS-App/src/memory_os/db/{store.py,schema.sql}` | storage; propagation_jobs table |
+| `implementation/MemoryOS-App/src/memory_os/admission/{patterns,admitter}.py` | deterministic classification + PII scrub |
+| `implementation/MemoryOS-App/src/memory_os/retrieval/{hybrid,bm25,rrf}.py` | tenant-prefiltered RRF fusion + provenance weights |
+| `implementation/MemoryOS-App/src/memory_os/context/builder.py` | zone-budgeted injection |
+| `implementation/MemoryOS-App/src/memory_os/lifecycle/manager.py` | merge/decay/evict + lineage cascade |
+| `implementation/MemoryOS-App/src/memory_os/observability/tracer.py` | typed spans + RedactingCollector |
+| `implementation/MemoryOS-App/src/memory_os/audit/checker.py` + `implementation/MemoryOS-App/audit/policy.toml` | config-as-code audit gate |
+| `implementation/MemoryOS-App/bench/{acceptance,latency_profile}.py` | D3 acceptance + EC-15 profiles |
+| `implementation/MemoryOS-App/tests/` | 8 gate files, 97 tests |
 | `design/` | canonical design set (D4) incl. sprint_plan, threat_model, api_contracts |
 
-## Commands (all from `MemoryOS-App\`)
+## Commands (all from `implementation\MemoryOS-App\`)
 - Suite: `$env:PYTHONPATH="src"; .venv\Scripts\python.exe -m pytest -q`
 - Acceptance: `$env:PYTHONPATH="src"; .venv\Scripts\python.exe -m bench.acceptance`
 - Audit gate: `$env:PYTHONPATH="src"; .venv\Scripts\python.exe -c "from memory_os.audit.checker import AuditChecker; print('PASS' if AuditChecker().audit().passed else 'FAIL')"`

@@ -118,7 +118,7 @@ py -3 -m venv .venv
 ```
 
 **First run downloads the embedding model** (ADR-007): the retrieval path uses a local
-`sentence-transformers` model (`all-MiniLM-L6-v2`, ~80 MB) stored in `MemoryOS-App\.hf-cache/`.
+`sentence-transformers` model (`all-MiniLM-L6-v2`, ~80 MB) stored in `implementation\MemoryOS-App\.hf-cache/`.
 The first `pytest` or benchmark run downloads it automatically
 (one time, internet needed once). After that everything works offline.
 
@@ -139,7 +139,7 @@ so you can skip the env var on this machine — but any other machine must set i
 
 ## 6. Run the gates (verify the build)
 
-All app code lives in `MemoryOS-App\` — run every command from there:
+All app code lives in `implementation\MemoryOS-App\` — run every command from there:
 
 ```powershell
 cd MemoryOS-App
@@ -170,7 +170,7 @@ so no manual migration step.
 
 ### Currently written milestone gates
 
-> All commands below run from `MemoryOS-App\` (see §6).
+> All commands below run from `implementation\MemoryOS-App\` (see §6).
 
 | Milestone | Command | Status |
 |---|---|---|
@@ -242,23 +242,23 @@ covers the G-M1/G-M2 storage + retrieval manual checks. Watch for:
 
 ## 8. Layout of what the gates verify
 
-> `MemoryOS-App/` holds all the code below (app-relative prefixes).
+> `implementation/MemoryOS-App/` holds all the code below (app-relative prefixes).
 
 - `design/data_model.md` — the single `memories` table + index design (schema.sql is byte-matched)
 - `design/sprint_plan.md` — milestone map G-M1…G-M3
-- `MemoryOS-App/src/memory_os/db/schema.sql` — DDL, idempotent
-- `MemoryOS-App/src/memory_os/db/store.py` — `MemoryStore` (session / apply_schema / add / supersede / delete / get_active / search_dense / index_names)
-- `MemoryOS-App/src/memory_os/embeddings/embedder.py` — local sentence-transformers model (ADR-007)
-- `MemoryOS-App/src/memory_os/retrieval/` — tokenizer, BM25, RRF, hybrid fusion (relevance floor)
-- `MemoryOS-App/tests/test_db.py` — 12 tests incl. tenant isolation, hard delete, HNSW rank, concurrency
-- `MemoryOS-App/tests/test_retrieval.py` — 14 tests (D3 regressions, EC-08/09/13/16, RRF/BM25 units)
-- `MemoryOS-App/tests/test_latency.py` — EC-15 gate (`-m latency`, 500-row corpus, p95 < 150 ms)
-- `MemoryOS-App/tests/test_admission.py` — 21 tests (ADD/UPDATE/DELETE/NOOP classification, slot
+- `implementation/MemoryOS-App/src/memory_os/db/schema.sql` — DDL, idempotent
+- `implementation/MemoryOS-App/src/memory_os/db/store.py` — `MemoryStore` (session / apply_schema / add / supersede / delete / get_active / search_dense / index_names)
+- `implementation/MemoryOS-App/src/memory_os/embeddings/embedder.py` — local sentence-transformers model (ADR-007)
+- `implementation/MemoryOS-App/src/memory_os/retrieval/` — tokenizer, BM25, RRF, hybrid fusion (relevance floor)
+- `implementation/MemoryOS-App/tests/test_db.py` — 12 tests incl. tenant isolation, hard delete, HNSW rank, concurrency
+- `implementation/MemoryOS-App/tests/test_retrieval.py` — 14 tests (D3 regressions, EC-08/09/13/16, RRF/BM25 units)
+- `implementation/MemoryOS-App/tests/test_latency.py` — EC-15 gate (`-m latency`, 500-row corpus, p95 < 150 ms)
+- `implementation/MemoryOS-App/tests/test_admission.py` — 21 tests (ADD/UPDATE/DELETE/NOOP classification, slot
   supersession per ADR-008, consent purge, PII redaction, MemoryTrap-as-data)
-- `MemoryOS-App/tests/test_context.py` — 6 tests (zone ceilings EC-010, D3 c3 40-token case,
+- `implementation/MemoryOS-App/tests/test_context.py` — 6 tests (zone ceilings EC-010, D3 c3 40-token case,
   injection order, `no_relevant_memory` shape, budget arithmetic)
-- `MemoryOS-App/bench/latency_profile.py` — per-phase latency profiler
-- `MemoryOS-App/pytest.ini` — `testpaths=tests`, `pythonpath=src`, `latency` + `adversarial` markers
+- `implementation/MemoryOS-App/bench/latency_profile.py` — per-phase latency profiler
+- `implementation/MemoryOS-App/pytest.ini` — `testpaths=tests`, `pythonpath=src`, `latency` + `adversarial` markers
 - `design/decision_records/ADR-008-entity-slot-linking.md` — the deterministic
   slot grammar `admission/patterns.py` implements (rule order matters: specific
   slots like deadline/meeting are checked before the generic `is on X` tool rule)
@@ -343,7 +343,7 @@ checked fact of the repository:
   rather than shipping unredacted spans.
 
 ```powershell
-# audit gate standalone (run from MemoryOS-App\)
+# audit gate standalone (run from implementation\MemoryOS-App\)
 cd MemoryOS-App
 $env:PYTHONPATH="src"; .venv\Scripts\python.exe -c "from memory_os.audit.checker import AuditChecker; r=AuditChecker().audit(); print('PASS' if r.passed else 'FAIL'); [print(f'  [{\"ok\" if x.passed else \"FAIL\"}] {x.rule}: {x.detail}') for x in r.results]"
 ```
@@ -369,7 +369,7 @@ Two gates close the threat-model verification loops:
     near-identical and paraphrased queries never surface another tenant's
     rows — including the explicit `no_relevant_memory` outcome.
 - **D3 acceptance replay** — `python -m bench.acceptance` (run from
-  `MemoryOS-App\`) re-runs the exact 10 hand-written workload cases from
+  `implementation\MemoryOS-App\`) re-runs the exact 10 hand-written workload cases from
   `experiments/naive_baseline/dataset.py` (app loads it via the repo-root
   path) through admission → retrieval → budgeted context injection,
   aggregates the same metrics as `summary.json`, and compares against the
@@ -385,7 +385,7 @@ Two gates close the threat-model verification loops:
   | sensitive_leak_rate_injection | 1.000 | **0.000** | 0 |
   | latency_p95_s | 0.0008 | **0.012** | < 0.150 |
 
-  Results are written to `MemoryOS-App/bench/results/acceptance.json`; the run exits
+  Results are written to `implementation/MemoryOS-App/bench/results/acceptance.json`; the run exits
   non-zero on any miss.
 
 *End of guide (G-M6). Later gates append their docs here.*

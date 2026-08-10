@@ -1,6 +1,6 @@
 """G-M6 acceptance replay: D3 baseline workload vs MemoryOS + targets.
 
-Usage (from repo root):
+Usage (from implementation/MemoryOS-App):
     python -m bench.acceptance [--out bench/results/acceptance.json]
 
 Replays the exact 10 hand-written cases from `experiments/naive_baseline/
@@ -37,8 +37,8 @@ from memory_os.context import build_context
 from memory_os.db.store import MemoryStore
 from memory_os.retrieval.hybrid import HybridRetriever, NoRelevantMemory
 
-APP_ROOT = Path(__file__).resolve().parents[1]          # MemoryOS-App/
-REPO_ROOT = Path(__file__).resolve().parents[2]         # repo root (experiments live there)
+APP_ROOT = Path(__file__).resolve().parents[1]          # implementation/MemoryOS-App/
+REPO_ROOT = Path(__file__).resolve().parents[3]         # repo root (experiments live there)
 DATASET = REPO_ROOT / "experiments" / "naive_baseline" / "dataset.py"
 
 # D3 workload cases carrying stale/contradicting pairs (contradiction metric)

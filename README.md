@@ -9,7 +9,7 @@ This repository is a research-grade course deliverable (handbook D1→D8) **and*
 .genesis/        D5 Genesis spine: PLAN, DONE.html, LOOPS, wiki, checkpoints, decisions
 design/          D4 design: system_design (3 parts + PDF), data_model, api_contracts, threat_model, ADRs, sprint_plan
 experiments/     D3 naive baseline: protocol, results.csv, error_examples.jsonl, failure-report PDF
-implementation/  D6 implementation + tests (later)
+implementation/  D6 implementation: the whole app under implementation/MemoryOS-App (src, tests, bench, venv, model cache)
 journal/         chronological session logs (this: 2026-08-08)
 product/         PRD + product narrative (Phase 5)
 reconstruction/  D1 first-principles reconstruction (Phase 1, merged)
@@ -35,23 +35,27 @@ Quick summary (full guide linked above):
 # 0. Env
 #   - Postgres 17.10 portable at C:\Users\CR7\Postgres\17, cluster at C:\Users\CR7\Postgres\data
 #   - pgvector 0.8.6 (Windows prebuilt) installed into the PG dirs
-#   - venv:  py -3 -m venv .venv;  .venv\Scripts\python.exe -m pip install -r requirements.txt
+#   - venv:  cd implementation\MemoryOS-App;  py -3 -m venv .venv;  .venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # 1. Start the server (detached, survives the session)
 $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
   CommandLine = '"C:\Users\CR7\Postgres\17\bin\pg_ctl.exe" -D "C:\Users\CR7\Postgres\data" -l "C:\Users\CR7\Postgres\data\postgres.log" start' }
 & "C:\Users\CR7\Postgres\17\bin\pg_isready.exe" -h localhost -p 5432
 
-# 2. Milestone gates (G-M1 … G-M3, see design/sprint_plan.md)
+# 2. Milestone gates (G-M1 … G-M6, see design/sprint_plan.md) — run from implementation\MemoryOS-App
+cd implementation\MemoryOS-App
 $env:MEMORYOS_DB_DSN="postgresql://memoryos@localhost:5432/memoryos"
-.venv\Scripts\python.exe -m pytest tests/ -v
+.venv\Scripts\python.exe -m pytest -q          # 97 passed
 
-# 3. D3 naive baseline — reproduce the measured failures
-.venv\Scripts\python.exe experiments\naive_baseline\run_baseline.py
+# 3. D3 acceptance replay
+.venv\Scripts\python.exe -m bench.acceptance   # all targets PASS
+
+# 4. D3 naive baseline — reproduce the measured failures
+.venv\Scripts\python.exe ..\..\experiments\naive_baseline\run_baseline.py
 #      outputs: experiments\baseline_results.csv, experiments\error_examples.jsonl,
 #               experiments\naive_baseline\summary.json
 
-# 4. PDFs (D1/D4) — rebuild markdown → PDFs via headless Chrome (see tools/build_pdfs.py)
+# 5. PDFs (D1/D4) — rebuild markdown → PDFs via headless Chrome (see tools/build_pdfs.py)
 python tools\build_pdfs.py
 ```
 
@@ -61,9 +65,9 @@ token-budgeted injection, PII/lifecycle guardrails, tenant isolation invariants 
 `.genesis/context-graph.json`.
 
 ## Status
-- **Phase:** D4 frozen (approved), handbook naming compliance done (67ddbcf); D6 build in progress — G-M1 (storage + tenant isolation) gate PASSED (12 tests, commit d2d8e02); G-M2/G-M3 next.
+- **Phase:** D4 frozen (approved), handbook naming compliance done (67ddbcf); D6 build complete — G-M1…G-M6 all gated green (97 tests, commits d2d8e02…caac791), app consolidated at `implementation/MemoryOS-App/`.
 - **Architecture:** hybrid retrieval (BM25+dense+RRF), Python, local-only git, no license. See `docs/DECISIONS.md`.
-- Implementation in `src/memory_os/` (Postgres 17 + pgvector); research + baseline merged from read-only source repos.
+- Implementation in `implementation/MemoryOS-App/src/memory_os/` (Postgres 17 + pgvector); research + baseline merged from read-only source repos.
 
 ## Key docs
 - `docs/RESUME.md` — shortest handoff (read first)

@@ -26,7 +26,7 @@ any write/read/lifecycle path — everything is reproducible and testable.
 ## Quick start
 
 ```powershell
-# from MemoryOS-App/
+# from implementation/MemoryOS-App/
 $env:PYTHONPATH="src"
 .venv\Scripts\python.exe -m pytest -q            # 97 passed
 .venv\Scripts\python.exe -m bench.acceptance     # D3 acceptance (targets PASS)
@@ -35,4 +35,4 @@ $env:PYTHONPATH="src"
 
 Requires a local PostgreSQL 17 + pgvector (`postgresql://memoryos@localhost:5432/memoryos`);
 the schema applies itself via `MemoryStore().apply_schema()` (idempotent).
-Full environment setup: `../docs/SETUP_AND_RUN.md`.
+Full environment setup: `../../docs/SETUP_AND_RUN.md`.
