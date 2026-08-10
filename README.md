@@ -1,83 +1,112 @@
 # MemoryOS
 
-**Conversational memory intelligence system** — persistent memory for AI assistants, where memories are stored, retrieved, updated, consolidated, and deleted per user intent.
+**Persistent memory for AI assistants** — a deterministic conversational-memory
+engine where memories are stored, retrieved, updated, consolidated, and
+deleted per user intent. No LLM calls on any write/read/delete path:
+everything is reproducible, testable, and safe by construction.
 
-This repository is a research-grade course deliverable (handbook D1→D8) **and** a product concept ("MemoryOS").
+> MemoryOS began as a research-grade engineering project (first-principles
+> reconstruction → research → baseline → design → build) and is now a working
+> system with a full test gate and an adversarial-security replay suite. The
+> repository keeps the whole journey visible: design docs, research catalog,
+> failure analysis, and engineering logs alongside the code.
+
+## Why it exists
+
+Assistants forget. MemoryOS gives an AI assistant a real memory system:
+
+- **Write** — a turn is classified (ADD / UPDATE / DELETE / NOOP) without
+  any LLM, and personally-identifiable content is scrubbed before storage.
+- **Read** — hybrid retrieval (BM25 + dense embeddings + RRF fusion) with
+  provenance-weighted ranking: what *you* stated always outranks what the
+  assistant inferred.
+- **Update** — correcting a fact supersedes the old one by slot key; derived
+  summaries are consolidated along the lineage.
+- **Delete** — deletion propagates through derived rows via a propagation
+  queue, so a forgotten fact never resurfaces.
+- **Contain** — tenant isolation at the database level; malicious directives
+  hidden in retrieved text (MemoryGraft/MINJA-class attacks) are stored
+  verbatim but inert.
+
+Against the D3 naive baseline, MemoryOS turns 33% contradiction, 50%
+cold-start false positives, and 100% sensitive-content leakage into
+**0% / 0% / 0%** — with precision@1 at 1.0 and p95 latency well under the
+150 ms budget.
 
 ## Repo layout
+
 ```
-.genesis/        D5 Genesis spine: PLAN, DONE.html, LOOPS, wiki, checkpoints, decisions
-design/          D4 design: system_design (3 parts + PDF), data_model, api_contracts, threat_model, ADRs, sprint_plan
-experiments/     D3 naive baseline: protocol, results.csv, error_examples.jsonl, failure-report PDF
-implementation/  D6 implementation: the whole app under implementation/MemoryOS-App (src, tests, bench, venv, model cache)
-journal/         chronological session logs (this: 2026-08-08)
-product/         PRD + product narrative (Phase 5)
-reconstruction/  D1 first-principles reconstruction (Phase 1, merged)
-research/        D2 landscape + sources catalog (Phase 2, verbatim copy)
-tools/           build scripts (PDF pipeline, …)
-transfer/        D8 handoff/training artifacts (later)
-verification/    D6 verification evidence (later)
-contribution/    D8 Genesis/ecosystem contribution (later)
-docs/            continuity docs: SESSION_STATE, PROJECT_MEMORY, DECISIONS, RESUME
-CURRENT.md       live checkpoint file
-PLAN.md          phase plan with statuses
-AGENTS.md        continuity rules (this repo)
+implementation/MemoryOS-App/   the application (src, tests, bench, audit policy, venv)
+  src/memory_os/               db · admission · retrieval · context · lifecycle · observability
+  tests/                       8 gate files, 97 tests
+  bench/                       D3 acceptance replay + latency profiling
+docs/                          setup guide, decisions, continuity docs
+design/                        system design (3 parts), data model, API contracts, threat model, ADRs
+research/                      landscape review + sources catalog
+reconstruction/                first-principles problem reconstruction
+experiments/                   naive baseline: protocol, results, failure analysis
+product/                       PRD + product narrative
+journal/                       engineering session logs
+.genesis/                      build-planning spine (LOOPS, context graph)
 ```
 
 ## Setup & run
 
-**Human-only instructions — see [`docs/SETUP_AND_RUN.md`](docs/SETUP_AND_RUN.md)**
-(Postgres 17 + pgvector install, server start, DB bootstrap, venv, gates, troubleshooting).
-
-Quick summary (full guide linked above):
+Requires **Windows 10/11 + PowerShell**, **Python 3.11+** (project uses 3.14),
+and **PostgreSQL 17 + pgvector** (portable install, no admin rights needed).
+Full human-friendly instructions: [`docs/SETUP_AND_RUN.md`](docs/SETUP_AND_RUN.md).
 
 ```powershell
-# 0. Env
-#   - Postgres 17.10 portable at C:\Users\CR7\Postgres\17, cluster at C:\Users\CR7\Postgres\data
-#   - pgvector 0.8.6 (Windows prebuilt) installed into the PG dirs
-#   - venv:  cd implementation\MemoryOS-App;  py -3 -m venv .venv;  .venv\Scripts\python.exe -m pip install -r requirements.txt
-
-# 1. Start the server (detached, survives the session)
-$r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
-  CommandLine = '"C:\Users\CR7\Postgres\17\bin\pg_ctl.exe" -D "C:\Users\CR7\Postgres\data" -l "C:\Users\CR7\Postgres\data\postgres.log" start' }
-& "C:\Users\CR7\Postgres\17\bin\pg_isready.exe" -h localhost -p 5432
-
-# 2. Milestone gates (G-M1 … G-M6, see design/sprint_plan.md) — run from implementation\MemoryOS-App
+# 0. Portable Postgres 17 + pgvector — see docs/SETUP_AND_RUN.md §2 (install dir is
+#    your choice; the guide uses $PGROOT\17 and $PGROOT\data)
+#    venv (inside the app):
 cd implementation\MemoryOS-App
+py -3 -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# 1. Start the server (detached, so it survives the shell session)
+$r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+  CommandLine = '"<PGROOT>\17\bin\pg_ctl.exe" -D "<PGROOT>\data" -l "<PGROOT>\data\postgres.log" start' }
+& "<PGROOT>\17\bin\pg_isready.exe" -h localhost -p 5432
+
+# 2. Run the gates (97 tests)
 $env:MEMORYOS_DB_DSN="postgresql://memoryos@localhost:5432/memoryos"
-.venv\Scripts\python.exe -m pytest -q          # 97 passed
+.venv\Scripts\python.exe -m pytest -q
 
-# 3. D3 acceptance replay
-.venv\Scripts\python.exe -m bench.acceptance   # all targets PASS
+# 3. D3 acceptance replay (all Deliverable targets)
+.venv\Scripts\python.exe -m bench.acceptance
 
-# 4. D3 naive baseline — reproduce the measured failures
-.venv\Scripts\python.exe ..\..\experiments\naive_baseline\run_baseline.py
-#      outputs: experiments\baseline_results.csv, experiments\error_examples.jsonl,
-#               experiments\naive_baseline\summary.json
-
-# 5. PDFs (D1/D4) — rebuild markdown → PDFs via headless Chrome (see tools/build_pdfs.py)
-python tools\build_pdfs.py
+# 4. Latency profile (EC-15, p95 budget < 150 ms)
+.venv\Scripts\python.exe -m bench.latency_profile --rows 500 --queries 30
 ```
 
-**Architecture (target, D4 + ADR-001…007):** Postgres 17 + pgvector; hybrid retrieval
-(BM25 + dense `all-MiniLM-L6-v2` embeddings + RRF k=60), deterministic supersession,
-token-budgeted injection, PII/lifecycle guardrails, tenant isolation invariants in
-`.genesis/context-graph.json`.
+The embedding model (`all-MiniLM-L6-v2`) downloads once on first run
+(~80 MB, stored in `.hf-cache/` next to the app); afterwards everything
+works offline.
+
+**Architecture:** PostgreSQL 17 + pgvector · hybrid retrieval (BM25 + dense
+`all-MiniLM-L6-v2` + RRF k=60) · deterministic admission (ADD/UPDATE/DELETE/NOOP)
+· slot-key supersession · zone-budgeted context injection · lineage-based
+delete propagation · typed trace spans with collector-level redaction ·
+config-as-code audit gate.
 
 ## Status
-- **Phase:** D4 frozen (approved), handbook naming compliance done (67ddbcf); D6 build complete — G-M1…G-M6 all gated green (97 tests, commits d2d8e02…caac791), app consolidated at `implementation/MemoryOS-App/`.
-- **Architecture:** hybrid retrieval (BM25+dense+RRF), Python, local-only git, no license. See `docs/DECISIONS.md`.
-- Implementation in `implementation/MemoryOS-App/src/memory_os/` (Postgres 17 + pgvector); research + baseline merged from read-only source repos.
+
+- **Build:** milestones G-M1…G-M6 implemented and green — 97 tests, D3
+  acceptance replay PASS (all targets), audit gate 8/8, DB left empty after
+  runs. See `design/sprint_plan.md`.
+- **Roadmap:** interactive documentation site (design/research/metrics
+  dashboards); product-grade branching (curated `main` + protected `develop`);
+  packaging and API surface.
 
 ## Key docs
-- `docs/RESUME.md` — shortest handoff (read first)
-- `docs/SESSION_STATE.md` — canonical state
-- `PLAN.md` — phase plan
-- `journal/` — session chronology
 
-## Source repos (read-only)
-- `D:\Abhii\Projects\Conversational-Memory-Intelligence-System-` — weeks 1–4 research, naive baseline, genesis.
-- `D:\Abhii\Opencode` — unversioned intermediates (new D1 drafts).
+- `docs/RESUME.md` — shortest handoff
+- `docs/SESSION_STATE.md` — canonical state
+- `docs/DECISIONS.md` — design decisions D-001…
+- `design/sprint_plan.md` — milestone map with demo commands
 
 ## Note
-Local-only git repository: no remote, no LICENSE, no external pushes.
+
+No license file — all rights reserved (see your jurisdiction's defaults).
+No CI configured; nothing here is affiliated with any company.
