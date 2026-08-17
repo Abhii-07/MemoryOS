@@ -1,230 +1,243 @@
-# Deployment Guide — $0/mo
+# Deployment Guide — $0/mo (Render Free)
 
-Deploy MemoryOS + MemoryOS-Showcase on Oracle Cloud Always Free tier.
-4 ARM cores, 24GB RAM, free forever.
+Deploy MemoryOS + MemoryOS-Showcase on Render Free tier.
+512MB RAM, 750 hours/month, no credit card required.
+
+---
+
+## Architecture
+
+```
+GitHub: Abhii-07/MemoryOS               (engine library — no deploy)
+GitHub: Abhii-07/MemoryOS-Application   (deployed product)
+                 │
+                 ▼
+        ┌────────────────────┐
+        │  Render Free       │  ← API (1 service, 750 hrs/mo)
+        │  memoryos-api      │
+        │  512MB RAM         │
+        │                    │
+        │  11 endpoints:     │
+        │  /ingest           │  ← Showcase playground
+        │  /ask              │  ← Showcase playground
+        │  /memory           │  ← Showcase playground
+        │  /audit            │  ← Showcase playground
+        │  /assist*          │  ← Showcase (LLM)
+        │  /chat             │  ← Showcase (LLM)
+        │  /healthz          │  ← probe
+        │  /v1/memory/turns  │  ← MemoryOS contract
+        │  /v1/memory/query  │  ← MemoryOS contract
+        │  DELETE /v1/memory/{id}   │  ← MemoryOS contract
+        │  /v1/memory/deletion-status/{id} │
+        └────────┬───────────┘
+                 │
+        ┌────────┴───────────┐
+        │  Vercel (Free)     │  ← Next.js site
+        │  site/ root dir    │
+        └────────────────────┘
+```
 
 ---
 
 ## Prerequisites
 
-| Account | URL | Purpose |
-|---------|-----|---------|
-| Oracle Cloud | cloud.oracle.com | Free ARM VM |
-| Neon | neon.tech | Free Postgres + pgvector |
-| Vercel | vercel.com | Free Next.js hosting |
-| OpenRouter | openrouter.ai | Free LLM API key |
+| Account | URL | Purpose | Card? |
+|---------|-----|---------|-------|
+| Render | render.com | Free API hosting | No |
+| Neon | neon.tech | Free Postgres + pgvector | No |
+| Vercel | vercel.com | Free Next.js hosting | No |
+| OpenRouter | openrouter.ai | Free LLM API key | No |
+| GitHub | github.com | Code (already done) | — |
 
 ---
 
-## Part 1: Oracle Cloud VM
+## Part 1: Database (Neon)
 
-### 1.1 Create account
-
-1. Go to [cloud.oracle.com](https://cloud.oracle.com)
-2. Sign up for **Always Free** account (needs credit card for verification, not charged)
-3. Verify email
-
-### 1.2 Create ARM instance
-
-1. Dashboard → **Create a VM instance**
-2. Settings:
-   - **Name:** `memoryos`
-   - **Image:** Ubuntu 22.04 or 24.04 (aarch64/ARM)
-   - **Shape:** **VM.Standard.A1.Flex** (Always Free eligible)
-     - OCPUs: **4** (max free)
-     - Memory: **24 GB** (max free)
-   - **Boot volume:** 50 GB (free tier allows up to 200GB)
-3. **Add SSH keys:** Upload your public key or generate new one
-4. **Networking:** Create a new VCN with internet access (default is fine)
-5. Click **Create**
-6. **Note the public IP** (e.g., `129.1xx.xxx.xxx`)
-
-### 1.3 Open ports
-
-1. Go to **Networking** → **Virtual Cloud Networks** → your VCN
-2. **Security Lists** → **Default Security List** → **Add Ingress Rules**
-3. Add:
-   | Protocol | Port | Source |
-   |----------|------|--------|
-   | TCP | 80 | 0.0.0.0/0 |
-   | TCP | 443 | 0.0.0.0/0 |
-   | TCP | 22 | Your IP only |
-
-### 1.4 Connect
-
-```bash
-ssh -i ~/.ssh/your_key.pem ubuntu@129.1xx.xxx.xxx
-```
-
----
-
-## Part 2: Database (Neon)
-
-### 2.1 Create Neon project
+### 1.1 Create project
 
 1. Sign in to [neon.tech](https://neon.tech)
-2. **Create Project**:
-   - Name: `memoryos`
-   - Postgres version: **17**
-3. **Copy connection string:**
+2. **Create Project** — name: `memoryos`, Postgres **17**
+3. Copy connection string:
    ```
    postgresql://neondb_owner:xxxx@ep-xxx.us-east-2.aws.neon.tech/memoryos?sslmode=require
    ```
 
-### 2.2 Enable pgvector
+### 1.2 Enable pgvector
 
 In Neon **SQL Editor**:
 ```sql
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-### 2.3 Create Showcase database
+### 1.3 Showcase database (optional — same DB works for both)
 
-1. **Databases** → **Create Database** → name: `memoryos_showcase`
-2. Enable pgvector:
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS vector;
-   ```
+The merged API uses ONE database. Skip the second DB unless you want
+tenant separation between the two surfaces. If you create it:
 
-You now have two connection strings:
-- **MemoryOS:** `postgresql://neondb_owner:xxxx@ep-xxx/memoryos?sslmode=require`
-- **Showcase:** `postgresql://neondb_owner:xxxx@ep-xxx/memoryos_showcase?sslmode=require`
+1. **Databases** → **Create Database** → `memoryos_showcase`
+2. `CREATE EXTENSION IF NOT EXISTS vector;` on it
 
 ---
 
-## Part 3: OpenRouter API Key
+## Part 2: OpenRouter API Key
 
-1. Go to [openrouter.ai](https://openrouter.ai)
-2. Sign up → **Keys** → **Create Key**
-3. Copy key (`sk-or-v1-...`)
-4. Free tier: `meta-llama/llama-3.3-70b-instruct:free`
-
----
-
-## Part 4: Deploy (one command)
-
-### 4.1 SSH into your VM
-
-```bash
-ssh -i ~/.ssh/your_key.pem ubuntu@129.1xx.xxx.xxx
-```
-
-### 4.2 Run the setup script
-
-Set your env vars and run:
-
-```bash
-export MEMORYOS_DB_DSN="postgresql://neondb_owner:xxxx@ep-xxx/memoryos?sslmode=require"
-export MEMORYOS_DB_DSN_SHOWCASE="postgresql://neondb_owner:xxxx@ep-xxx/memoryos_showcase?sslmode=require"
-export OPENROUTER_API_KEY="sk-or-v1-xxxx"
-
-curl -sL https://raw.githubusercontent.com/Abhii-07/MemoryOS/main/deploy/setup.sh | bash
-```
-
-Or clone and run manually:
-
-```bash
-git clone https://github.com/Abhii-07/MemoryOS.git /opt/memoryos/repos/MemoryOS
-git clone https://github.com/Abhii-07/MemoryOS-Application.git /opt/memoryos/repos/MemoryOS-Showcase
-
-cd /opt/memoryos
-# set env vars above, then:
-bash deploy/setup.sh
-```
-
-### 4.3 What the script does
-
-1. Installs Docker + Docker Compose
-2. Clones both repos
-3. Builds Docker images (~5-10 min first time)
-4. Starts 3 containers: `memoryos-api`, `showcase-api`, `nginx`
-5. Prints your public URL
-
-### 4.4 Verify
-
-```bash
-# Health checks
-curl http://YOUR_IP/healthz/memoryos
-curl http://YOUR_IP/healthz/showcase
-
-# Test MemoryOS API
-curl -X POST http://YOUR_IP/api/memory/turns \
-  -H "Content-Type: application/json" \
-  -d '{"tenant_id":"test","user_id":"user1","text":"I prefer dark mode","turn_type":"user","timestamp":"2026-08-17T12:00:00Z"}'
-```
+1. [openrouter.ai](https://openrouter.ai) → sign up → **Keys** → **Create Key**
+2. Copy key (`sk-or-v1-...`)
+3. Free model: `meta-llama/llama-3.3-70b-instruct:free`
 
 ---
 
-## Part 5: Showcase Frontend (Vercel)
+## Part 3: Deploy API (Render Free)
 
-### 5.1 Import project
+### 3.1 Create service
 
-1. Sign in to [vercel.com](https://vercel.com)
-2. **Add New** → **Project**
-3. Import `Abhii-07/MemoryOS-Application`
-4. **Root Directory:** `site`
-5. Framework: **Next.js** (auto-detected)
+1. Sign in to [render.com](https://render.com)
+2. **New** → **Web Service**
+3. Connect GitHub repo: `Abhii-07/MemoryOS-Application`
+4. Settings:
+   - **Name:** `memoryos-api`
+   - **Region:** Oregon (us-west) or nearest
+   - **Runtime:** Docker
+   - **Dockerfile path:** `./server/Dockerfile`
+   - **Docker context:** repo root
+   - **Instance type:** **Free** ($0/mo)
+   - **Health Check Path:** `/healthz`
 
-### 5.2 Environment Variables
+### 3.2 Environment variables
 
 | Key | Value |
 |-----|-------|
-| `NEXT_PUBLIC_MEMORY_API_URL` | `http://YOUR_VM_IP/showcase` |
-| `NEXT_PUBLIC_MEMORY_ENGINE` | `api` |
+| `MEMORYOS_DB_DSN` | `postgresql://neondb_owner:xxxx@ep-xxx/memoryos?sslmode=require` |
+| `CORS_ORIGINS` | `https://your-app.vercel.app` (add after Part 4) |
+| `MEMORYOS_ASSIST_PROVIDER` | `openrouter` |
+| `OPENROUTER_API_KEY` | `sk-or-v1-...` |
+| `OPENROUTER_MODEL` | `meta-llama/llama-3.3-70b-instruct:free` |
 
-### 5.3 Deploy
+### 3.3 Deploy
 
-1. Click **Deploy**
-2. Vercel gives you: `https://memoryos-application-xxxx.vercel.app`
+1. Click **Create Web Service**
+2. Build: ~5-8 min (torch CPU ~1.5GB image)
+3. Verify:
+   ```
+   curl https://memoryos-api.onrender.com/healthz
+   # → {"status":"ok"}
+   ```
 
-### 5.4 Update CORS
+### 3.4 Test contract endpoints
 
-On your VM, edit `/opt/memoryos/docker-compose.prod.yml`:
-```yaml
-CORS_ORIGINS: "https://memoryos-application-xxxx.vercel.app"
-```
-
-Restart:
 ```bash
-cd /opt/memoryos
-docker compose -f docker-compose.prod.yml up -d --force-recreate showcase-api
+# Admit a turn
+curl -X POST https://memoryos-api.onrender.com/v1/memory/turns \
+  -H "Content-Type: application/json" \
+  -d '{"tenant_id":"test","user_id":"u1","text":"I prefer dark mode","turn_type":"user","timestamp":"2026-08-17T12:00:00Z"}'
+
+# Query
+curl -X POST https://memoryos-api.onrender.com/v1/memory/query \
+  -H "Content-Type: application/json" \
+  -d '{"tenant_id":"test","user_id":"u1","query_text":"what UI do I prefer?","token_budget":2048}'
+
+# Delete (use record_id from above)
+curl -X DELETE https://memoryos-api.onrender.com/v1/memory/{record_id} \
+  -H "X-Tenant-ID: test" -H "X-User-ID: u1"
 ```
 
 ---
 
-## Part 6: SSL (optional but recommended)
+## Part 4: Deploy Site (Vercel)
 
-### 6.1 Point domain to VM
+### 4.1 Import
 
-1. Buy a domain or use a free subdomain (e.g., [sslip.io](https://sslip.io))
-2. Create DNS A record → your VM IP
+1. [vercel.com](https://vercel.com) → **Add New** → **Project**
+2. Import `Abhii-07/MemoryOS-Application`
+3. **Root Directory:** `site`
+4. Framework: **Next.js** (auto)
 
-### 6.2 Get free SSL cert
+### 4.2 Environment variables
 
-```bash
-sudo apt install -y certbot
-sudo certbot certonly --standalone -d yourdomain.com
-```
+| Key | Value |
+|-----|-------|
+| `NEXT_PUBLIC_MEMORY_API_URL` | `https://memoryos-api.onrender.com` |
+| `NEXT_PUBLIC_MEMORY_ENGINE` | `api` |
 
-### 6.3 Update nginx config
+### 4.3 Deploy
 
-Edit `/opt/memoryos/nginx.conf`:
-```nginx
-server {
-    listen 443 ssl;
-    server_name yourdomain.com;
-    ssl_certificate /etc/nginx/certs/fullchain.pem;
-    ssl_certificate_key /etc/nginx/certs/privkey.pem;
-    # ... rest same
-}
-```
+1. Click **Deploy**
+2. URL: `https://memoryos-application-xxxx.vercel.app`
+3. **Back to Render** → `memoryos-api` → Environment → set
+   `CORS_ORIGINS=https://memoryos-application-xxxx.vercel.app`
+4. Manual Deploy → Deploy latest commit (or wait for auto-deploy)
 
-Copy certs:
-```bash
-sudo cp /etc/letsencrypt/live/yourdomain.com/fullchain.pem /opt/memoryos/certs/
-sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem /opt/memoryos/certs/
-sudo docker compose -f /opt/memoryos/docker-compose.prod.yml restart nginx
-```
+---
+
+## Part 5: Verification Checklist
+
+| Check | URL | Expected |
+|-------|-----|----------|
+| Healthz | `https://memoryos-api.onrender.com/healthz` | `{"status":"ok"}` |
+| Site | `https://your-app.vercel.app` | Landing loads |
+| Playground | `/playground` | Ingest + ask work |
+| Chat | `/playground` → Chat | LLM grounded reply |
+| Contract turns | `POST /v1/memory/turns` | 200 + admission_op |
+| Contract query | `POST /v1/memory/query` | memory_found or no_relevant_memory |
+| Contract delete | `DELETE /v1/memory/{id}` | 200 complete / 202 in_progress |
+
+---
+
+## Part 6: Performance Monitoring
+
+Render dashboard → `memoryos-api` → **Metrics** tab shows CPU + memory
+live. Track these:
+
+| Metric | Expected | Watch for |
+|--------|----------|-----------|
+| Memory RSS | 350-450MB peak (after 1st request) | >480MB = near OOM |
+| Memory idle | ~120-150MB (before 1st request) | — |
+| CPU | <10% idle, spikes on embed | Sustained >90% |
+| Cold start | ~1 min (Render spin-up) + ~5-10s torch load | >2 min |
+| Warm p95 | <200ms retrieval | >500ms |
+| Spin-downs | After 15 min idle | Many/day is normal (free tier) |
+
+**Keep-warm (optional):** free cron at [cron-job.org](https://cron-job.org)
+pinging `https://memoryos-api.onrender.com/healthz` every 10 min.
+Note: free tier still counts those hours against the 750/mo budget.
+
+**Hour budget:** 750 hrs/mo = 25 hrs/day. Spun-down instances use 0 hrs.
+If suspended, wait for month reset or upgrade to Starter ($7).
+
+---
+
+## Part 7: Troubleshooting
+
+### OOM (service restarts, 503s)
+- First request after spin-up loads torch (~250MB). One worker only.
+- Check Render logs for `Killed` / `MemoryError`.
+- Mitigations: `OMP_NUM_THREADS=2` (set in Dockerfile), avoid concurrent
+  first-requests hitting the lazy init simultaneously.
+- Upgrade path: Starter ($7) — just change instance type in dashboard.
+
+### Slow cold start
+- Normal for free tier: ~1 min spin-up + model load.
+- cron-job.org keep-alive every 10 min reduces frequency.
+- Upgrade path: Starter stays warm (no spin-down).
+
+### Build fails / slow build
+- torch CPU download is ~200MB. Free tier build can take 5-8 min.
+- 500 build-minutes/month included; a failed build also counts.
+- `docker system prune` equivalent: delete the service's build cache in
+  Render dashboard → Builds tab.
+
+### Chat returns "no assistant provider configured"
+- `OPENROUTER_API_KEY` missing/empty on Render.
+- Key invalid → regenerate at openrouter.ai/keys.
+
+### Neon connection refused
+- `sslmode=require` present?
+- Neon free pauses after inactivity → **Resume** in dashboard.
+- Check Neon not in "paused" state under Project → Settings → Compute.
+
+### 503 from healthz
+- Postgres unreachable → Neon paused or wrong DSN.
+- Check `docker logs` equivalent: Render → Logs tab.
 
 ---
 
@@ -232,7 +245,7 @@ sudo docker compose -f /opt/memoryos/docker-compose.prod.yml restart nginx
 
 | Service | Tier | Monthly |
 |---------|------|---------|
-| Oracle Cloud (VM) | Always Free | $0 |
+| Render (API) | Free | $0 |
 | Neon (Postgres) | Free | $0 |
 | Vercel (Site) | Free | $0 |
 | OpenRouter (LLM) | Free tier | $0 |
@@ -240,42 +253,14 @@ sudo docker compose -f /opt/memoryos/docker-compose.prod.yml restart nginx
 
 ---
 
-## Troubleshooting
+## Provider-Agnostic Upgrade Path
 
-### Build fails — OOM
-Oracle Cloud ARM has 24GB RAM. Shouldn't happen. If it does:
-```bash
-docker system prune -a
-cd /opt/memoryos && docker compose -f docker-compose.prod.yml build --no-cache
-```
+The compute layer can change without touching MemoryOS core:
 
-### Neon connection refused
-- Check `sslmode=require` in DSN
-- Neon free tier pauses after inactivity → click **Resume** in dashboard
-
-### Vercel site shows "Application error"
-- Check `NEXT_PUBLIC_MEMORY_API_URL` points to your VM IP
-- Check VM security list allows inbound on port 80
-- Check CORS includes Vercel domain
-
-### Cold start slow (~30s)
-Normal. torch + sentence-transformers load on first request. Subsequent requests are fast.
-To keep warm, add a cron:
-```bash
-*/5 * * * * curl -s http://localhost:8000/healthz > /dev/null
-```
-
-### Service won't start
-```bash
-cd /opt/memoryos
-docker compose -f docker-compose.prod.yml logs memoryos-api
-docker compose -f docker-compose.prod.yml logs showcase-api
-```
-
-### Update code after git push
-```bash
-cd /opt/memoryos/repos/MemoryOS && git pull
-cd /opt/memoryos/repos/MemoryOS-Showcase && git pull
-cd /opt/memoryos
-docker compose -f docker-compose.prod.yml up -d --build
-```
+| Move | What changes | Code changes |
+|------|-------------|--------------|
+| Free → Starter | Render dashboard: instance type | None |
+| Render → Railway/Fly/VPS | New Dockerfile CMD, CORS origin | None (core untouched) |
+| CPU → GPU torch | Dockerfile pip index URL | None (core untouched) |
+| OpenRouter → OpenAI/Anthropic | `MEMORYOS_ASSIST_PROVIDER` env | None (core untouched) |
+| Neon → Supabase/RDS | `MEMORYOS_DB_DSN` env | None (core untouched) |
